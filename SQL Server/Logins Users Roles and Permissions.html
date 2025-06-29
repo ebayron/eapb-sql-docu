@@ -1,0 +1,250 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Logins Users Roles and Permissions</TD></TABLE>
+		
+		<DIV CLASS="main">
+
+			<H2>Logins (Instance-Level Authentication)</H2>
+				
+				<UL>
+					<LI>Required to connect to SQL Server but does not grant access to databases.</LI>
+					<LI>Can be created using SQL Server Authentication, Windows Authentication, or Azure AD.</LI>
+				</UL>
+				
+<PRE>
+CREATE LOGIN MyLogin
+WITH PASSWORD = 'StrongP@ssw0rd!';
+
+</PRE>
+
+			<H2>Users (Database-Level Access)</H2>
+				
+				<UL>
+					<LI>Mapped to a login and exists within a specific database.</LI>
+				</UL>
+				
+<PRE>
+USE MyDatabase;
+
+CREATE USER MyUser
+FOR LOGIN MyLogin;
+
+</PRE>
+
+			<H2>Roles (Grouping Users for Permissions)</H2>
+				
+				<UL>
+					<LI>Simplifies permission management by grouping users together.</LI>
+					<LI>Server Roles apply at the instance level; Database Roles apply within a database.</LI>
+				</UL>
+
+				<H3>Built-in Server Roles</H3>
+				
+					<UL>
+						<LI>sysadmin - Has unrestricted access to the entire SQL Server instance.</LI>
+						<LI>serveradmin - Manages server-wide configurations using sp_configure (e.g., memory settings, parallelism). Can shut down the SQL Server instance.</LI>
+						<LI>securityadmin - Manages logins and their properties. Controls server-level permissions. Can manage database-level permissions but does not grant database access itself.</LI>
+						<LI>processadmin - Can view and manage processes running on the SQL Server instance. Can kill sessions using KILL command.</LI>
+						<LI>setupadmin - Can manage linked servers and sp_addlinkedserver. Can modify startup procedures.</LI>
+						<LI>bulkadmin - Can execute the BULK INSERT command to load data into tables from external files.</LI>
+						<LI>diskadmin - Manages disk files related to SQL Server. Primarily used for managing database storage.</LI>
+						<LI>dbcreator - Can create, alter, drop, and restore databases. <FONT COLOR="red">A login which has a dbcreator role can drop a database even if it has not a user in it.</FONT></LI>
+						<LI>public - Assigned to all logins by default. Has minimal permissions but can be used to define default access levels for all users.</LI>
+					</UL>
+					
+				<H3>Built-in Database Roles</H3>
+				
+					<UL>
+						<LI>db_owner - Full control over the database.</LI>
+						<LI>db_securityadmin - Manages database security by modifying roles and permissions.</LI>
+						<LI>db_accessadmin - Manages database access for users and logins.</LI>
+						<LI>db_backupoperator - Can back up the database. Cannot restore databases or manage security.</LI>
+						<LI>db_ddladmin - Can run CREATE, ALTER, and DROP commands on objects like tables, views, and stored procedures.</LI>
+						<LI>db_datawriter - Can insert, update, and delete data from all user tables in the database.</LI>
+						<LI>db_datareader - Can read data from all user tables and views.</LI>
+						<LI>db_denydatawriter - Prevents a user from modifying data (INSERT, UPDATE, DELETE).</LI>
+						<LI>db_denydatareader - Prevents a user from reading data.</LI>
+						<LI>public - Automatically assigned to all database users. Serves as a fallback role, ensuring that users have at least some minimal access to the database.</LI>
+					</UL>
+		
+<PRE>
+-- Create a custom database role
+USE MyDatabase;
+CREATE ROLE MyCustomRole;
+
+-- Grant SELECT permission on a table to the custom role
+GRANT SELECT ON MyTable TO MyCustomRole;
+
+-- Add the user to the custom role
+ALTER ROLE MyCustomRole
+ADD MEMBER MyUser;
+
+</PRE>
+
+
+			<H2>Permissions (Grant, Revoke, and Deny Access)</H2>
+				
+				<UL>
+					<LI>Defines what actions users/roles can perform.</LI>
+					<LI>Can be granted at the server level or the database level.</LI>
+				</UL>
+				
+<PRE>
+-- Grant SELECT and INSERT permissions on a table
+GRANT SELECT, INSERT ON MyTable TO MyUser;
+
+-- Revoke INSERT permission (removes granted access)
+REVOKE INSERT ON MyTable FROM MyUser;
+
+-- Deny DELETE permission (explicitly blocks it, even if granted)
+DENY DELETE ON MyTable TO MyUser;
+
+</PRE>
+
+			<H2>Best Practices</H2>
+				
+				<UL>
+					<LI>Follow the Principle of Least Privilege (PoLP) - Only assign the minimum required permissions.</LI>
+					<LI>Use Roles Instead of Assigning Permissions Directly to Users - This simplifies access management.</LI>
+					<LI>Avoid Using the 'sa' Login - Rename or disable 'sa' to reduce security risks.</LI>
+					<LI>Enforce Strong Password Policies for SQL Logins - Enable password complexity rules with CHECK_POLICY = ON.</LI>
+					<LI>Use Windows Authentication instead - More secure due to Active Directory integration.</LI>
+					<LI>Regularly Audit Logins & Permissions - Check logins: SELECT * FROM sys.server_principals; Check database users: SELECT * FROM sys.database_principals;</LI>
+					<LI>Use TDE for Data Security - Encrypts database files to protect sensitive information.</LI>
+					<LI>Restrict Access to xp_cmdshell & Other System Features - Disable unnecessary features to reduce attack surface.</LI>
+				</UL>
+				
+			<H2>Questions and Answers</H2>
+			
+				<OL>
+					<LI>What is the difference between a login and a user in SQL Server?</LI>
+						<P>A login is a server-level security principal used for authentication, while a user is a database-level principal used for access control within a specific database.</P>
+					<LI>How do you create a SQL Server login using T-SQL?</LI>
+
+<PRE>
+CREATE LOGIN MyLogin WITH PASSWORD = 'StrongPassword!';
+
+</PRE>
+					<LI>What is the default authentication mode in SQL Server, and how can it be changed?</LI>
+					
+						<P>The default authentication mode is Windows Authentication Mode. It can be changed via SSMS or using T-SQL:</P>
+
+<PRE>
+EXEC sp_configure 'authentication mode', 1;  
+RECONFIGURE;
+
+</PRE>
+
+					<LI>What is the purpose of the sys.server_principals system view?</LI>
+					
+						<P>It lists all server-level security principals, including logins and fixed server roles.</P>
+						
+					<LI>How can you list all the users of a specific database in SQL Server?</LI>
+
+<PRE>
+SELECT name
+FROM sys.database_principals
+WHERE type IN ('S', 'U', 'G');
+
+</PRE>
+
+					<LI>How do you associate a database user with an existing login?</LI>
+
+<PRE>
+CREATE USER MyUser FOR LOGIN MyLogin;
+
+</PRE>
+
+					<LI>What is the dbo user in SQL Server, and when is it used?</LI>
+					
+						<P>It is a special user with full database permissions. The owner of the database automatically becomes dbo.</P>
+						
+					<LI>What happens if a database user exists without a corresponding login?</LI>
+					
+						<P>The user exists in the database but cannot authenticate, leading to potential orphaned users that need to be mapped to a login.</P>
+						
+					<LI>How do you drop a SQL Server login?</LI>
+
+<PRE>
+DROP LOGIN MyLogin;
+
+</PRE>
+
+					<LI>Can a SQL Server login access multiple databases? Explain.</LI>
+
+						<P>Yes, a SQL Server login can access multiple databases if it has associated users in those databases.</P>
+						
+					<LI>What are the different types of roles in SQL Server?</LI>
+					
+						<P>There are fixed server roles, fixed database roles, and custom roles.</P>
+						
+					<LI>How do you add a user to a fixed server role?</LI>
+
+<PRE>
+ALTER SERVER ROLE sysadmin ADD MEMBER MyLogin;
+
+</PRE>
+					<LI>What is the difference between db_datareader, db_datawriter, and db_owner roles?</LI>
+					
+						<UL>
+							<LI>db_datareader allows SELECT on all tables.</LI>
+							<LI>db_datawriter allows INSERT, UPDATE, and DELETE.</LI>
+							<LI>db_owner has full database control.</LI>
+						</UL>
+						
+					<LI>How can you grant SELECT permissions on a specific table to a user?</LI>
+					
+<PRE>
+GRANT SELECT ON MyTable TO MyUser;
+
+</PRE>
+						
+					<LI>What is the purpose of the sys.database_principals system view?</LI>
+					
+						<P>It stores all database-level security principals, including users and roles.</P>
+						
+					<LI>What is the difference between GRANT, DENY, and REVOKE in SQL Server?</LI>
+					
+						<UL>
+							<LI>GRANT allows an action.</LI>
+							<LI>DENY explicitly prevents an action.</LI>
+							<LI>REVOKE removes granted or denied permissions.</LI>
+						</UL>
+						
+					<LI>How do you check the permissions assigned to a specific user?</LI>
+
+<PRE>
+SELECT * FROM fn_my_permissions(NULL, 'DATABASE');
+
+</PRE>
+
+					<LI>What is the significance of the VIEW ANY DATABASE permission?</LI>
+
+						<P>It lets a user see all databases but not necessarily access them.</P>
+						
+					<LI>How do you create a custom database role and assign permissions to it?</LI>
+
+<PRE>
+CREATE ROLE MyRole;
+GRANT SELECT ON MyTable TO MyRole;
+ALTER ROLE MyRole ADD MEMBER MyUser;
+
+</PRE>
+
+					<LI>How do you prevent a user from accessing a database while keeping their login?</LI>
+
+<PRE>
+DENY CONNECT TO MyUser;
+
+</PRE>
+
+				</OL>
+
+		</DIV>
+	</BODY>
+</HTML>	

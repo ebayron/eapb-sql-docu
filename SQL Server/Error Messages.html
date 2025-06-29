@@ -1,0 +1,70 @@
+ <HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Error Messages</TD></TABLE>
+		
+		<DIV CLASS="main">
+					
+			<TABLE WIDTH="100%">
+				<TR><TD CLASS="tabhead">No.</TD><TD CLASS="tabhead">Severity</TD><TD CLASS="tabhead">Message</TD><TD CLASS="tabhead">Solution</TD><TD CLASS="tabhead">Reference</TD></TR>
+				<TR><TD CLASS="tabdata">952</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">Database '%.*ls' is in transition. Try the statement later.</TD><TD CLASS="tabdata">Kill sessions under the specified database.</TD><TD CLASS="tabdata">https://dba.stackexchange.com/questions/57432/database-is-in-transition-error</TD></TR>
+				<TR><TD CLASS="tabdata">1426</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">To issue ALTER DATABASE SET WITNESS, all three server instances must be interconnected, and the mirror database must be caught up. When these conditions are met, reissue the command.</TD><TD CLASS="tabdata">
+<PRE>
+-- run first
+ALTER DATABASE InUser SET WITNESS OFF
+-- then re-add Witness
+
+</PRE>
+				</TD><TD CLASS="tabdata">https://dba.stackexchange.com/questions/57432/database-is-in-transition-error</TD></TR>
+				<TR><TD CLASS="tabdata">1807</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">Could not obtain exclusive lock on database 'model'.</TD><TD CLASS="tabdata">
+<PRE>
+SELECT
+	*
+FROM sys.dm_tran_locks
+WHERE resource_type = 'database'
+	AND resource_database_id = 3
+	AND request_type = 'LOCK'
+	AND request_status = 'GRANT';
+	  
+-- run above query to identify what
+session is locking the query (run sp_who2
+for more details) and decide if it can be killed.	
+</PRE>
+				</TD><TD CLASS="tabdata"></TD></TR>
+				<TR><TD CLASS="tabdata">5052</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">%ls is not permitted while a database is in the %ls state.</TD><TD CLASS="tabdata"><PRE>RESTORE DATABASE &ltdatabase_name&gt<BR />WITH RECOVERY</PRE></TD><TD CLASS="tabdata"></TD></TR>
+				<TR><TD CLASS="tabdata">7202</TD><TD CLASS="tabdata">11</TD><TD CLASS="tabdata">Could not find server '%.*ls' in sys.servers. Verify that the correct server name was specified. If necessary, execute the stored procedure sp_addlinkedserver to add the server to sys.servers.</TD><TD CLASS="tabdata">Add server as linked server in the current server.</TD><TD CLASS="tabdata"></TD></TR>
+				<TR><TD CLASS="tabdata">7302</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">Cannot create an instance of OLE DB provider "%ls" for linked server "%ls".</TD><TD CLASS="tabdata">In Providers, check Allow Inprocess</TD><TD CLASS="tabdata"></TD></TR>
+				<TR><TD CLASS="tabdata">7411</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">Server '%.*ls' is not configured for %ls.</TD><TD CLASS="tabdata">
+<PRE>
+EXEC master.dbo.sp_serveroption @server=N'', @optname=N'rpc out', @optvalue=N'true'
+
+</PRE>
+				</TD><TD CLASS="tabdata"></TD></TR>
+				<TR><TD CLASS="tabdata">15281</TD><TD CLASS="tabdata">10</TD><TD CLASS="tabdata">SQL Server blocked access to %S_MSG '%ls' of component '%.*ls' because this component is turned off as part of the security configuration for this server. A system administrator can enable the use of '%.*ls' by using sp_configure. For more information abo</TD><TD CLASS="tabdata">
+<PRE>
+-- To change the advanced options:
+EXEC sp_configure 'show advanced options', 1
+GO
+-- To update the current value for advanced options:
+RECONFIGURE
+GO
+-- To enable the xp_cmdshell option:
+EXEC sp_configure 'xp_cmdshell', 1
+GO
+-- To update the new configured value for xp_cmdshell option:
+RECONFIGURE
+
+</PRE>
+				</TD><TD CLASS="tabdata">https://www.mssqltips.com/sqlservertip/1020/enabling-xpcmdshell-in-sql-server/</TD></TR>
+				<TR><TD CLASS="tabdata">18752</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">Only one Log Reader Agent or log-related procedure (sp_repldone, sp_replcmds, and sp_replshowcmds) can connect to a database at a time. If you executed a log-related procedure, drop the connection over which the procedure was executed or execute sp_replfl</TD><TD CLASS="tabdata">Run CHECKPOINT (error when trying to run sp_repldone).</TD><TD CLASS="tabdata"></TD></TR>
+				<TR><TD CLASS="tabdata">33071</TD><TD CLASS="tabdata">16</TD><TD CLASS="tabdata">This command requires %S_MSG to be disabled. Disable the %S_MSG and rerun this command.</TD><TD CLASS="tabdata">Disable server audit trace before dropping a database audit trace.</TD><TD CLASS="tabdata"></TD></TR>
+			</TABLE>
+			
+		</DIV>
+	</BODY>
+</HTML> 
+

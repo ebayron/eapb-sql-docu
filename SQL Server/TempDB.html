@@ -1,0 +1,128 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>TempDB</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H3>Definition</H3>
+			
+				<P>
+					A system database used for various temporary storage needs.
+					It plays a critical role in many operations and helps ensure efficient processing.</P>
+		
+			<H3>Number of data files</H3>
+				
+				<UL>
+					<LI>
+						In every database file, there are special metadata pages that track whether space is available or used among other things.
+						As an example, run an INSERT query that targets a temporary table.
+						This query will need to allocate space in TempDB and that means updating the metadata pages where the data will live so it can be found later.
+					</LI><BR />
+
+					<LI>
+						The metadata pages are shared resources that could be written to by multiple threads simultaneously (even a single query can span multiple threads if it uses parallelism).
+						To protect the consistency of an internal resource that's accessible by multiple threads, SQL Server serializes access by using a lightweight synchronization object called a latch.
+					</LI><BR />
+					
+					<LI>
+						When multiple threads are all asking for new space to be allocated, the latch requests can get queued up because only one thread can modify the same page at the same time.
+						Because a set of metadata pages exists in every data file, we can add more data files to spread out the requests while the latch queue still exists.
+						There are now more of them and they're all processing requests concurrently.
+						This reduces the amount of time a thread spends waiting in the queue and the less time it spends waiting, the faster it can get its work done overall.
+					</LI><BR />
+					
+					<LI>
+						How can we tell if this queue waiting is a problem?
+						SQL Server keeps track of what each process is waiting for which can be seen in <CODE>sys.dm_os_waiting_tasks</CODE>.
+						There are many different wait types but the ones we're interested in here are the <CODE>page_latch_waits</CODE>. 	
+						If you think there's a problem, you can dig into the waits by using <CODE>sys.dm_os_wait_stats</CODE>.
+						It's best to isolate problematic queries if you can because these DMVs operate at the server level.
+						Use the <CODE>DBCC SQLPERF</CODE> command to reset the wait stats in between runs but <FONT COLOR="red">be careful doing this in production as there may be processes set up to record the stats</FONT>.
+					</LI><BR />
+
+					<LI>
+						When there’s only one TempDB file, SQL Server can experience contention on system pages, especially GAM, SGAM, and PFS pages.
+						Multiple TempDB files help distribute these allocations across multiple files, reducing bottlenecks.
+						SQL Server automatically uses a proportional fill algorithm to distribute load across TempDB files.
+						With multiple files, SQL Server can distribute temporary objects, reducing hotspots on a single file and improving performance, especially in high-concurrency environments.
+						By spreading TempDB across multiple physical drives or SSDs, I/O operations can be parallelized, reducing latency and improving overall query performance.
+						This is especially useful when dealing with large temp tables, heavy sorting, or row versioning workloads.
+						How many data files should be added?
+						This is a very situational question because the use of TempDB varies based on your system workload.
+						Because the latch queuing system gets clogged up the more active threads there are.
+						The number of data files you need is related to the number of query schedulers in the SQL Server instance.
+						The number of schedulers will usually be equal to the number of logical processors in the system.
+						<MARK>Start with multiple TempDB files equal to the number of logical processors (up to 8).</MARK>
+						Enable trace flags like 1117 and 1118 in older versions to manage allocations better (not needed in SQL Server 2016+).
+					</LI><BR />
+
+					<LI>
+						TempDB database is subject to specific problems that generally don't affect standard user databases, specifically PFS, GAM, and SGAM contention, associated with the consistent creation and destruction of temporary objects.
+						To minimize the impact of this problem and, in most cases, to eliminate it, <MARK>multiple data files can be created for the TempDB database that are the same size, and are configured with the same AutoGrowth settings</MARK>.
+						When a database has multiple files in the same filegroup, allocations are made from each file, using a proportionate fill factor, which causes the files to be used equally in proportion to their size and available free space.
+						Since each file has its own PFS, GAM and SGAM pages, creating multiple files for TempDB will reduce contention on these pages when allocations are made.
+					</LI><BR />
+					
+					<LI>
+						Why I don't just recommend adding a hundred files and being done with it?
+						The proportional fill algorithm recomputes the waiting's every 8000 or so allocations and as the number of data files increases, so does the amount of CPU required to do this computation.
+						This can directly impact performance so yes there is a such thing as too many data files.
+					</LI><BR />
+
+					<LI>
+						Allocation contention will usually only show up in TempDB  because it's a shared database within the whole instance of SQL Server.
+						You can apply these same principles to user databases as well but the number of data files should probably be more conservative.
+					</LI>
+				</UL>
+
+			<H3>Size of data files</H3>
+
+				<UL>
+					<LI>
+						If the server has been running long enough, <MARK>all the TempDB files have probably expanded themselves to a maximum size needed by the business cycle for data files.
+						Take the current total size and divide it equally among the number of files you're going to use</MARK>.
+						The log file can be left to the current size.
+					</LI><BR />
+
+					<LI>
+						The two major consumers of space in TempDB are usually temporary tables used as data loading targets and index maintenance operations that use the "Sort in TempDB" option.
+						The total data file size should be at least the size of the largest of these operations.
+						That said, some caution is necessary when configuring the size of the files.
+					</LI><BR />
+
+					<LI>
+						Data in TempDB is temporary and when SQL Server restarts, it recreates TempDB from scratch which means going through the allocation process for all the files.
+						If the files are very large, this could add a significant amount of time to an instance restart and that may affect your SLAs.
+						One way to help with that is to enable instant file initialization which will skip part of the allocation process for data files.
+						Also, set a relatively aggressive fixed growth size on all the data files especially if instant file initialization is enabled.
+						<MARK>The data files should have the same growth rate so the file sizes stay roughly the same</MARK>.
+						Ideally, the file should never be expanding to service a user operation but if they do, you want them to expand enough that the next operation won't need to expand them again.
+						That said the expansion process shouldn't take an excessive amount of time.
+					</LI><BR />
+					
+					<LI>
+						Set autogrowth to avoid many growth spurts, use a fixed amount that minimizes autogrowth use.
+						Also, pre-size it so autogrowth doesn't have to happen often.
+					</LI>
+				</UL>
+			
+			<H3>Physical drive location of data files</H3>
+				
+				<UL>
+					<LI>
+						Consider whether the TempDB files should be placed on a separate physical device than the rest of the databases.
+						This would be done to improve the performance of physical disk operations.
+						It's a best practice to <MARK>use a separate storage location for TempDB</MARK> if using a separate physical device is necessary in the future.
+						Doing it this way allows you to reuse the storage location even if it's backed by a different physical device.
+						If the instance of SQL Server uses TempDB very heavily it can be a real win to separate the files onto a separate storage device.
+						That said, it's a more advanced thing to do because it does increase the complexity of managing the server.
+					</LI>
+				</UL>
+		</DIV>
+	</BODY>
+</HTML>	

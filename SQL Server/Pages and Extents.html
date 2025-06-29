@@ -1,0 +1,126 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Pages and Extents</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Page</H2>
+			
+				<UL>
+					<LI>Data are stored as pages.</LI>
+					<LI>Smallest unit of allocation (there is no half page).</LI>
+					<LI>Size of each page is:</LI>				
+						<UL>
+							<LI>System Info: Page Header (96 bytes) + Row Offset (36 bytes) = -132 bytes</LI>
+								<UL>
+									<LI>Pages Header contains PageID, Pointers to Previous and Next pages, Free Space, and Total # of rows on the page.</LI>
+									<LI>Row Offset contains distance from the first byte in the row to the start of the page.</LI>
+										<BR /><IMG SRC="IMG/14.PNG" WIDTH=40% /><BR />
+								</UL>
+							<LI>Total Size for Row Storage: 8060 bytes</LI>
+						</UL>
+					<LI>Page header contains info like Previous and Next Page. Row Offset contains info like how far from the start of the page the record is.</LI>
+					<LI>If we have a row with 4500 bytes of data then only single row will be stored in a page and rest space 3560 bytes are wasted. If we will restructure row size with 4000 bytes then we can store 2 rows on a page and will be able to reduce the waste spaces.</LI>
+					<LI>Entire page is loaded into RAM (not just rows).</LI>
+						<BR /><IMG SRC="IMG/19.PNG" WIDTH=40% /><BR />
+					<LI>1 Page is equal to:</LI>
+						<UL>
+							<LI>8192 bytes</LI>
+							<LI>8 KB</LI>
+						</UL>
+					<LI>8 Pages is equal to:</LI>
+						<UL>
+							<LI>64 KB</LI>
+							<LI>1 Extent</LI>
+						</UL>
+					<LI>128 Pages is equal to:</LI>
+						<UL>
+							<LI>1024 KB</LI>
+							<LI>16 Extents</LI>
+							<LI>1 MB</LI>
+						</UL>
+				</UL>
+				
+			<H2>Extents</H2>
+
+				<UL>
+					<LI>A fundamental unit of data storage that consists of <MARK>eight contiguous pages, which equals 64 KB</MARK> (since each page is 8 KB).</LI>
+					<LI>Basic unit of space management for SQL Server data and index pages.</LI>
+					<LI>Are used to efficiently manage space allocation and to improve performance by grouping pages together.</LI>
+					<LI>There are two types of extents:</LI>
+						<OL>
+							<LI>Uniform Extents - All eight pages in the extent are allocated to a single object, such as a table or an index. This type of extent is typically used for objects that are large enough to require more than one page.</LI>
+							<LI>Mixed Extents - Pages in the extent can be allocated to different objects (up to 8). This type is generally used for smaller objects that do not require an entire extent. Mixed extents help reduce wasted space by allowing multiple smaller objects to share the same extent.</LI>
+						</OL>
+					<LI>First eight pages of a table is stored in mixed extent (ex: together with the first eight pages of other tables) while after eight pages, uniform extent (ex: same table) is provided.</LI>
+					<LI>SQL Server uses a proportional fill algorithm, meaning it distributes data across all available extents proportionally. This helps balance the I/O load across the database files.</LI>
+				</UL>
+				
+			<H2>Page Splits</H2>
+
+				<UL>
+					<LI>
+						Occurs when there is not enough space on an existing data page to accommodate a new row or update an existing row, typically due to an insert or update operation.
+						This involves the normal I/O of inserting a row, but at the same time updating indexes as well hence it takes a lot of I/O.
+						While certain amount of page splits is normal and expected, but too many page splits causes performance issue.
+						When this happens, SQL Server has to split the data page into two to make room for the new data. Here’s how it works:
+					</LI>
+
+						<OL>
+							<LI>Identify the Page to Split - SQL Server determines that the current page does not have enough free space to accommodate the new data.</LI>
+							<LI>Allocate a New Page - SQL Server allocates a new page, often adjacent to the current page.</LI>
+							<LI>Move Half the Rows - Approximately half of the rows from the full page are moved to the new page. This helps to create space for the new data on the original page.</LI>
+							<LI>Update Pointers - The index pointers are updated to reflect the new structure of the pages, ensuring the data can still be accessed efficiently.</LI>
+						</OL>				
+				</UL>
+				
+				<H3>Implications of Page Splits</H3>
+
+					<UL>
+						<LI>Performance Overhead - Page splits can be resource-intensive as they involve moving data and updating index pointers. This can lead to increased CPU, memory, and I/O usage.</LI>
+						<LI>Fragmentation - Page splits can cause fragmentation within the database, leading to inefficient use of storage and potential performance degradation over time. Fragmentation can be internal (within pages) or external (across the storage).</LI>
+						<LI>Increased I/O - Because new pages need to be written to disk and index pointers updated, page splits increase the amount of I/O operations, which can slow down the system, especially under heavy load.</LI>
+					</UL>
+	
+				<H3>Minimizing Page Splits</H3>
+
+					<UL>
+						<LI>Fill Factor - Adjusting the fill factor for indexes can help reduce the frequency of page splits. The fill factor specifies the percentage of space on each page to be filled with data, leaving the rest as free space for future growth.</LI>
+						<LI>Monitoring and Maintenance - Regularly monitor and maintain indexes using tools like <CODE>DBCC SHOWCONTIG</CODE> or <CODE>sys.dm_db_index_physical_stats</CODE> to identify and address fragmentation. Rebuilding or reorganizing indexes can help mitigate the effects of page splits.</LI>
+						<LI>Optimized Data Insertion - Design applications and data insertion processes to minimize random inserts that can cause page splits. Consider batch inserts or using sequential keys for indexes.</LI>
+						<LI>Row Compression - Implementing row or page compression can help reduce the size of rows, thus potentially reducing the need for page splits.</LI>
+					</UL>
+					
+			<H2>Allocation Bitmap Pages</H2>
+			
+				<BR /><IMG SRC="IMG/15.PNG" WIDTH=40% /><BR />
+			
+				<UL>
+					<LI>The internal "directory" of information on pages.</LI>
+					<LI>GAM - which extents are available for allocation. It covers a 4GB interval of data.</LI>
+					<LI>SGAM - which mixed extents have at least one page to allocate. It covers a 4GB interval of data.</LI>
+					<LI>PFS - Used to track how much free space is on pages. Tracks other attributes as well. Covers a 64MB interval of data.</LI>
+					<LI>IAM</LI>
+						<UL>
+							<LI>Special internal page on a data file that tracks all extent allocations for tables, indexes, and partitions.</LI>
+							<LI>Lets SQL Server know what extent belongs to what specific entity.</LI>
+							<LI>Covers a 4GB interval of data.</LI>
+						</UL>
+						<BR /><IMG SRC="IMG/16.PNG" WIDTH=50% /><BR />
+					<LI>In summary:</LI>
+						<LI>It's all about cost reduction to the system.</LI>
+						<LI>GAM, SGAM, and PFS basically help SQL Server determine where free space is and how much so that it can allocate it appropriately without having to scan all the pages.</LI>
+						<LI>IAM pages and indexes help SQL Server fulfill queries.</LI>						
+						<LI>These few pages help keep an internal "directory" for SQL Server to be able to find what it needs quickly and pull back as few pages as necessary.</LI>
+				</UL>
+				
+			
+				
+		</DIV>
+	</BODY>
+</HTML>	

@@ -1,0 +1,71 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Renaming a user database</TD></TABLE>
+
+		<DIV CLASS="main">
+
+			<OL>
+				<LI>Set database to single_user mode.</LI>
+
+<PRE>
+USE [master];
+GO
+
+ALTER DATABASE testDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+</PRE>
+
+				<LI>Rename the database.</LI>
+
+<PRE>
+EXEC master..sp_renamedb 'testDB','testDB_Instance';
+</PRE>
+
+				<LI>Rename the logical file.</LI>
+
+<PRE>
+USE [master];
+GO
+
+ALTER DATABASE testDB_Instance MODIFY FILE (NAME=N'testDB', NEWNAME=N'testDB_Instance');
+
+ALTER DATABASE testDB_Instance MODIFY FILE (NAME=N'testDB_log', NEWNAME=N'testDB_Instance_log');
+</PRE>
+
+				<LI>Detach database.</LI>
+
+<PRE>
+USE [master];
+GO
+
+EXEC master.dbo.sp_detach_db @dbname = N'testDB_Instance';
+</PRE>
+
+				<LI>Rename physical file in Windows Explorer.</LI>
+				
+				<LI>Attach database (replace path with correct one).</LI>
+
+<PRE>
+USE [master];
+GO
+
+CREATE DATABASE testDB_Instance ON 
+   (FILENAME = N'D:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\DATA\testDB_Instance.mdf' ),
+   (FILENAME = N'D:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\DATA\testDB_Instance_log.ldf' )
+FOR ATTACH;
+</PRE>
+
+				<LI>Set database to multi-user.</LI>
+
+<PRE>
+ALTER DATABASE testDB_Instance SET MULTI_USER;
+</PRE>
+			</OL>
+
+		</DIV>
+	</BODY>
+</HTML>	

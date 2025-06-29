@@ -1,0 +1,59 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Moving System Databases</TD></TABLE>
+
+		<DIV CLASS="main">
+
+				<H3>Master Database</H3>
+
+					<OL>
+						<LI>Open SQL Server Configuration Manager.</LI><BR />
+						<LI>Go to properties of SQL Server Instance.</LI><BR /> 
+						<LI>Go to Startup parameter tab.</LI><BR />
+						<LI>Update the -d and -l parameter to the new location.</LI><BR />
+						<LI>Stop SQL Server service.</LI><BR />
+						<LI>Copy the database files to the new location through Windows explorer.</LI><BR />
+						<LI>Start SQL Server service.</LI><BR />
+						<LI>Double check the properties of the moved database files, if there were no problems, delete the old database files.</LI>
+					</OL>
+
+				<H3>MSDB, Model, Temp Databases</H3>
+
+					<OL>
+						<LI>Add the service account of the SQL Server instance on the folder permission with full control where the system database files will be transferred.</LI><BR />
+						<LI>Note the logical name of the database file through database properties.</LI><BR />
+						<LI>Execute the script below.</LI>
+<PRE>
+SELECT
+	'
+	ALTER DATABASE tempdb
+	MODIFY FILE (
+	NAME = [' + f.name + '],'	+ '
+	FILENAME = ''T:\NewSystemDBs\' +
+f.name	+ 
+CASE
+	WHEN f.type = 1 THEN '.ldf'
+	ELSE '.mdf'
+END
+	+ ''');'
+FROM sys.master_files f
+WHERE f.database_id = DB_ID(N'tempdb');
+
+-- Change the database name in the ALTER DATABASE and in the WHERE clause and filename.
+
+</PRE>
+				
+						<LI>Stop SQL Server service.</LI><BR />
+						<LI>Copy the database files to the new location through Windows explorer (TempDB does not need to be copied since it will be created upon restarting SQL Server service).</LI><BR />
+						<LI>Start SQL Server service.</LI><BR />
+						<LI>Double check the properties of the moved database files, if there were no problems, delete the old database files.</LI>
+					</OL>
+
+		</DIV>
+	</BODY>
+</HTML>	

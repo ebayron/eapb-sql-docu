@@ -1,0 +1,79 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Stored Procedure vs. Function</TD></TABLE>
+		
+		<DIV CLASS="main">
+					
+			<TABLE WIDTH="100%">
+				<TR><TD CLASS="tabdata"></TD><TD CLASS="tabhead">Stored Procedure</TD><TD CLASS="tabhead">Function</TD></TR>
+				<TR><TD CLASS="tabhead">Summary</TD>
+					<TD CLASS="tabdata">Better for complex operations, data manipulation, and controlling the flow of execution. Can modify the database state and handle transactions.</TD>
+					<TD CLASS="tabdata">Better for computations and returning values within SQL statements. Cannot modify the database state and have limited error handling capabilities.</TD></TR>
+				
+				<TR><TD CLASS="tabhead">Purpose</TD>
+					<TD CLASS="tabdata">Primarily used to perform a sequence of operations such as data manipulation (INSERT, UPDATE, DELETE) or control-of-flow operations.</TD>
+					<TD CLASS="tabdata">Primarily used to compute values and return them. They are often used for scalar computations or to return table data.</TD></TR>
+				
+				<TR><TD CLASS="tabhead">Return Type</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Can return multiple values using OUTPUT parameters.</LI>
+							<LI>Can return a status value indicating success or failure.</LI>
+							<LI>Cannot be used directly in a SELECT statement but can return result sets.</LI>
+						</UL></TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Always returns a value. Can return a single scalar value or a table.</LI>
+							<LI>Scalar functions return a single data value (e.g., INT, VARCHAR).</LI>
+							<LI>TVFs return a table.</LI>
+						</UL></TD></TR>
+					
+				<TR><TD CLASS="tabhead">Usage in SQL</TD>
+					<TD CLASS="tabdata">Called using the EXEC or EXECUTE statement.</TD>
+					<TD CLASS="tabdata">Can be used directly in SQL statements.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Parameters</TD>
+					<TD CLASS="tabdata">Both input and output parameters.</TD>
+					<TD CLASS="tabdata">Only input parameters.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Side Effects</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Can modify database state (e.g., updating tables).</LI>
+							<LI>Can include transactions, and thus, can commit or rollback transactions.</LI>
+						</UL></TD></TD>
+					<TD CLASS="tabdata">Cannot modify database state. Deterministic and should not cause side effects.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Error Handling</TD>
+					<TD CLASS="tabdata">Can use TRY...CATCH blocks for error handling.</TD>
+					<TD CLASS="tabdata">More flexible in terms of what operations can be performed.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Capabilities</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Can contain procedural logic (loops, conditionals).</LI>
+							<LI>Can call other stored procedures.</LI>
+							<LI>Can include transactions, and thus, can commit or rollback transactions.</LI>
+						</UL></TD></TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Cannot include procedural logic like loops or conditionals that modify the database.</LI>
+							<LI>Cannot call stored procedures.</LI>
+							<LI>Useful for encapsulating reusable computations and simplifying complex queries.</LI>
+						</UL></TD></TD></TR>
+					
+				<TR><TD CLASS="tabhead">Performance</TD>
+					<TD CLASS="tabdata">Generally compiled once and stored in the database cache, improving performance for repeated execution.</TD>
+					<TD CLASS="tabdata">Can be used in SELECT statements and executed for each row, which can impact performance if not designed carefully.</TD></TR>
+					
+			</TABLE>
+			
+		</DIV>
+	</BODY>
+</HTML> 
+

@@ -1,0 +1,74 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Troubleshoot Error 824 Severity 24</TD></TABLE>
+
+		<DIV CLASS="main">
+
+			<OL>
+				<LI>Error 824 severity 24 state 2 was detected on both SQL Server Error Log, Windows Event Log, and 3rd Party Database Monitoring Tool.</LI><BR />
+
+				<LI>Run below command on the database affected.</LI>
+
+<PRE>
+USE testDB; -- Database affected
+
+DBCC CHECKDB;
+</PRE>
+
+				<LI>While running above command, run below command.</LI>
+
+<PRE>
+SELECT * FROM msdb..suspect_pages
+
+/* Error was encountered on Oct 25 and Oct 26.
+database_id file_id     page_id              event_type  error_count last_update_date
+----------- ----------- -------------------- ----------- ----------- -----------------------
+7           1           16645059             1           1           2019-07-23 23:28:20.880
+8           1           64409781             1           1           2019-07-25 08:16:34.080
+8           1           39415406             2           1           2019-08-05 21:12:56.767
+8           1           110208656            3           1           2019-08-29 10:44:43.027
+8           1           110208659            1           1           2019-08-29 10:44:48.377
+7           1           58030017             1           1           2019-10-25 20:43:58.267
+8           1           8224140              2           1           2019-10-26 12:59:32.323
+</PRE>
+
+				<LI>Run below command.</LI>
+				
+<PRE>
+DBCC TRACEON (3604);
+DBCC PAGE (8, 1, 8224140, 0); -- Database ID, File ID, Page ID
+DBCC TRACEOFF (3604);
+GO
+
+-- Find "Metadata: ObjectId" value, In this case, 235147883
+</PRE>
+
+				<LI>Run below command on the affected database.</LI>
+
+<PRE>
+USE <db>
+
+SELECT OBJECT_NAME(235147883) -- result is COUNTERPARTY
+</PRE>
+
+				<LI>Run below command.</LI>
+
+<PRE>
+SELECT * FROM sys.objects WHERE name = 'COUNTERPARTY''
+
+/*
+name            object_id   principal_id schema_id   parent_object_id type type_desc   create_date             modify_date             is_ms_shipped is_published is_schema_published
+--------------- ----------- ------------ ----------- ---------------- ---- ----------- ----------------------- ----------------------- ------------- ------------ -------------------
+COUNTERPARTY    235147883   NULL         1           0                U    USER_TABLE  2017-02-27 13:57:05.000 2019-10-19 13:05:49.613 0             0            0
+*/
+</PRE>		
+			</OL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

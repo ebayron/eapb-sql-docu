@@ -1,0 +1,25 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Changing SQL Server Collation After Installation</TD></TABLE>
+
+		<DIV CLASS="main">
+		
+			<OL>
+				<LI>Note the collation needs to be changed.</LI><BR />
+				<LI>Note the installation path of SQL Server (ex: D:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Binn).</LI><BR />
+				<LI>If there are user-databases that are already has the correct collation, de-attached them first (possible to encounter error 1934 and 3434).</LI><BR />
+				<LI>Stop SQL Server services.</LI><BR />
+				<LI>Run command prompt as administrator and change directory to the installation path.</LI><BR />
+				<LI>Type the following command: <CODE>sqlservr -m -T4022 -T3659 -s"SQLEXP2014" -q"SQL_Latin1_General_CP1_CI_AI"</CODE> (-s is only for named-instance servers).</LI><BR />
+				<LI>Start the service once done.</LI><BR />
+				<LI>Check database server (attach the de-attached databases, if any) and each database (sys.databases) for the collation.</LI>
+			</OL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

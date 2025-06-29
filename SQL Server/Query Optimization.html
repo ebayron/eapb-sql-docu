@@ -1,0 +1,226 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Query Optimization</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Disk Drives</H2>
+			
+				<UL>
+					<LI>Depending on how partitions (cluster size) is formatted, disk performance can be affected.</LI>
+					<LI>MS recommends formatting the clusters to 64k allocation units.</LI>
+					<LI>Extents are 64K in size and this can help with Read operations since tables/indexes are organized in Extents by SQL Server.</LI>
+					<LI>It aligns well with SQL Server's I/O patterns, improving performance and reducing fragmentation.</LI>
+					<LI>When the disk’s allocation unit size is 64 KB, SQL Server reads and writes data efficiently in complete extents, reducing unnecessary I/O operations.</LI>
+				</UL>
+
+				<BR /><IMG SRC="IMG/17.PNG" WIDTH=40% /><BR />
+				<BR /><IMG SRC="IMG/18.PNG" WIDTH=40% /><BR />
+		
+			<H2>SET NOCOUNT ON</H2>
+			
+				<P>Suppresses all DONE_IN_PROC messages until enabled for the session.</P>
+				<P>Can add up to very big savings when included in any procedural code such as procedures, functions (UDFs), triggers, and batches.</P>
+		
+			<H2>Specify the schema name</H2>
+			
+				<P>Always - when creating, altering, refencing objects.</P>				
+				<P>Object resolution works harder if not specified.</P>
+				<P>Can yield multiple cached plans for the same query.</P>				
+				<P>Security:</P>				
+					<OL>
+						<LI>User Aaron runs EXEC sptest.</LI>
+						<LI>sptest is a stored procedure lies in dbo running <CODE>SELECT * FROM test</CODE>.</LI>
+						<LI>It will read dbo.test instead of aaron.test.</LI>
+					</OL>
+				
+			<H2>Avoid Non-SARGable conditions</H2>
+			
+				<P>
+					SARG stands for Search ARGumentable.
+					It refers to a type of condition in a SQL query that allows the database engine to efficiently use indexes to improve query performance.
+					A SARGable condition is one that can leverage the database's indexing capabilities to quickly locate and retrieve rows that match the condition, rather than scanning the entire table.
+				</P>
+				
+
+				<H3>Non-SARGable Conditions</H3>
+
+					<P>Conditions that are not SARGable often involve transformations or manipulations on the column values that prevent the database engine from effectively using indexes.</P>
+
+						<UL>
+							<LI>Using functions on indexed columns, such as <CODE>UPPER(columnName) = 'VALUE'</CODE>.</LI>
+							<LI>Functions/calculations on columns of a WHERE or JOIN clause can make SQL Server ignore indexes.</LI>
+							<LI>Operations that include mathematical or string manipulation on the indexed column.</LI>
+							<LI>Comparisons with expressions that do not directly reference the column value.</LI>
+						</UL>
+		
+					<BR /><IMG SRC="IMG/08.PNG" WIDTH=60% /><BR />
+					<DIV CLASS="sidebysidecenterdiv">
+						<IMG SRC="IMG/09.PNG" WIDTH=20% CLASS="sidebysidecenter" />
+						<IMG SRC="IMG/10.PNG" WIDTH=20% CLASS="sidebysidecenter" />
+					</DIV>
+					
+			<H2>Wildcard Searches Using %</H2>
+			
+				<P>Queries that use the LIKE clause have two simple rules:</P>
+				
+				<UL>
+					<LI>LIKE can use indexes if the pattern starts with a character string, such as <CODE>WHERE lname LIKE 'w%'</CODE>.</LI>
+					<LI>LIKE cannot use an index if the pattern starts with a leading wildcard, such as <CODE>WHERE lname LIKE '%smith'</CODE>.</LI>
+				</UL>
+		
+			<H2>Query Rewrite</H2>
+			
+				<P>Simplify complex queries, break them down into smaller queries, or use CTEs to improve readability and performance.</P>
+		
+			<H2>Index Fragmentation</H2>
+			
+				<P>Indexes become fragmented, leading to inefficient data retrieval.</P>
+				
+					<UL>
+						<LI>Rebuild.</LI>
+						<LI>Reorganize.</LI>
+					</UL>
+					
+			<H2>UNION vs UNION ALL</H2>
+			
+				<P>UNION ALL performs better because of an unpublicized side-effect.</P>
+				<P>UNION eliminates duplicates by sorting.</P>
+					<UL>
+						<LI>Can require worktable, additional sort operators.</LI>
+						<LI>Can have effect on performance and tempdb.</LI>
+						<LI>Can change semantics of query results.</LI>
+					</UL>
+					
+			<H2>Index scenarios</H2>
+			
+				
+				
+					<TABLE>
+						<TR><TD CLASS="tabhead">Scenario</TD><TD CLASS="tabhead">Index</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">WHERE a=@a AND b=@b</TD>
+							<TD CLASS="tabdata">Index on (A, B) or (B, A)</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">WHERE a=@a AND b=@b | WHERE b=@b</TD>
+							<TD CLASS="tabdata">Index on (B, A)</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">WHERE a=@a AND b=@b | WHERE b=@b | WHERE c=@c</TD>
+							<TD CLASS="tabdata">Index on (B, A) | Index on (C)</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">WHERE a=@a AND b>@b</TD>
+							<TD CLASS="tabdata">Index on (A, B)</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">WHERE a=@a AND b>@b AND c<@c</TD>
+							<TD CLASS="tabdata">Index on (A, B, C) | Index on (A, C, B) (depends on the general selectivity of the two predicates; not the density of the column). In a scenario of "b>0 AND c<@ayearago" where b returns the whole table and c returns 2 rows, Index on (A, C, B) would be better. It is better to have a predicate that will return a least row first. Reduce the no. of rows in consideration of the query as early as possible.</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">WHERE a=@a OR b=@b</TD>
+							<TD CLASS="tabdata">Two indexes, one on A, and one on B</TD></TR>
+						<TR>
+							<TD CLASS="tabdata">FROM t1 JOIN t2 ON t1.c = t2.c WHERE t1.a = @a</TD>
+							<TD CLASS="tabdata">Index on (A, C); WHERE first as it filters the rows.</TD></TR>
+					</TABLE>
+					
+			<H2>Compound Index</H2>
+			
+				<P>Most useful from the leftmost column to the rightmost column, in the order they appeared in the CREATE INDEX statement.</P>
+				
+<PRE>
+CREATE NONCLUSTERED INDEX ix_foo ON foo(a, b, c, d)
+
+</PRE>
+
+				<UL>
+					<LI><CODE>WHERE a = @a</CODE> or <CODE>WHERE a = @a AND b = @b</CODE> will access ix_foo.</LI>
+					<LI><CODE>WHERE a = @a AND d = @d</CODE> or <CODE>WHERE a = @a AND c = @c AND b = @b</CODE> may only access part of ix_foo.</LI>
+					<LI><CODE>WHERE b = @b AND c = @c</CODE> will usually ignore ix_foo.</LI>
+				</UL>				
+		
+			<H2>Missing or Unused Indexes</H2>
+				
+				<UL>
+					<LI>Identify missing indexes - Create appropriate indexes on columns used in WHERE clauses, JOIN conditions, and ORDER BY clauses.</LI>
+					<LI>Remove Unused Indexes.</LI>
+				</UL>
+		
+			<H2>Parameter Sniffing</H2>
+			
+				<P>SQL Server caches an execution plan that is not optimal for all parameter values.</P>
+				
+					<UL>
+						<LI>Use <CODE>OPTION (RECOMPILE)</CODE> hint.</LI>
+						<LI>Use <CODE>OPTIMIZE FOR</CODE> hint.</LI>
+					</UL>
+		
+			<H2>Outdated Statistics</H2>
+			
+				<P>Outdated statistics can lead to inefficient query plans.</P>
+				
+					<UL>
+						<LI>Ensure statistics are up to date using the UPDATE STATISTICS command or enable auto update statistics.</LI>
+						<LI>Ensure that the AUTO_UPDATE_STATISTICS option is enabled.</LI>
+					</UL>
+		
+			<H2>Suboptimal JOINs</H2>
+			
+				<P>Inefficient join operations causing slow queries.</P>
+				
+					<UL>
+						<LI>Ensure indexes exist on columns used in join conditions.</LI>
+						<LI>Use appropriate join types (INNER JOIN, LEFT JOIN, etc.) based on the data and requirements.</LI>
+						<LI>Rewrite joins to use more efficient join strategies or reduce the number of joins if possible.</LI>
+					</UL>
+		
+			<H2>Inefficient Use of Cursors</H2>
+			
+				<P>Using cursors for row-by-row processing instead of set-based operations.</P>
+				
+					<UL>
+						<LI>Replace cursor operations with set-based operations using UPDATE, DELETE, INSERT, or MERGE statements.</LI>
+						<LI>In some cases, a WHILE loop can be more efficient than a cursor.</LI>
+					</UL>
+		
+			<H2>Overuse of SELECT *</H2>
+			
+				<P>Using SELECT * retrieves all columns, leading to unnecessary data transfer and processing. Explicitly specify only the columns needed.</P>
+				
+				<P>This can also break application code, if there are any additional/deletion of a column.</P>
+		
+			<H2>Scalar Functions in SELECT Clause</H2>
+			
+				<P>Scalar functions in the SELECT clause can be evaluated row-by-row, causing slow performance.</P>
+				
+					<UL>
+						<LI>Inline Functions - Use inline TVFs instead of scalar functions.</LI>
+						<LI>Computed Columns - Use computed columns if the function is simple and frequently used.</LI>
+					</UL>
+					
+			<H2>IN or OR?</H2>
+			
+				<P>Both produces exact same plan.</P>
+			
+		
+			<H2>Lock Contention</H2>
+			
+				<P>High levels of locking can cause performance bottlenecks.</P>
+				
+					<UL>
+						<LI>Isolation Levels - Use appropriate isolation levels like READ COMMITTED SNAPSHOT to reduce locking.</LI>
+						<LI>Query Hints - Use query hints like <CODE>NOLOCK</CODE> where dirty reads are acceptable.</LI>
+					</UL>
+					
+			<H2>SP_ prefix</H2>
+			
+				<UL>
+					<LI>Causes metedata overhead.</LI>
+					<LI>Induce needless SP:CacheMiss events.</LI>
+				</UL>
+
+		</DIV>
+	</BODY>
+</HTML>	

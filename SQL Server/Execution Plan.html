@@ -1,0 +1,540 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Execution Plan</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+				<H2>Physical vs Logical Reads</H2>
+				
+					<UL>
+						<LI>Logical reads - Number of pages read from the data cache (RAM).</LI>
+						<LI>Physical reads - Number of pages read from disk.</LI>
+					</UL>
+					
+
+				<H2>Operators</H2>
+
+					<UL>
+					
+						<LI><B>Key Lookup</B></LI>
+							
+							<UL>
+								<LI>Required when the index doesn't have all of the fields our query needs.</LI>
+								<LI>It will seek for the row within the Clustered Index using corresponding Clustered Indexed value.</LI>
+							</UL>
+							
+						<LI><B>Nested Loop</B></LI>							
+						
+							<UL>
+								<LI>The database joins two tables by iterating over each row in one table and finding matching rows in the other table.</LI>
+								<OL>
+									<LI>Take one row from the outer table (top) and find the matching rows in the inner table (bottom) and return them.</LI>
+									<LI>When matching rows in the inner table are finished, then jump to the next record of the outer table.</LI>
+									<LI>Repeat the process until all the rows of the outer table are finished.</LI>
+								</OL>		
+							</UL>
+							
+						<LI><B>RowID Lookup</B></LI>
+						
+							<P>It will seek for the row within the Heap using the Row Pointer (which points to start of the row).</P>
+							
+						<LI><B>Stream Aggregate</B></LI>
+						
+							<P>More efficient than Hash Aggregate.</P>
+							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>							
+						<LI><B></B></LI>
+
+1. **Table Scan / Full Table Scan:**
+   - **Description:** The database reads every row in the table.
+   - **Troubleshooting Insight:** This usually indicates that there is no useful index for the query, leading to potentially high I/O and slow performance.
+
+2. **Index Scan / Index Range Scan:**
+   - **Description:** The database scans through the index to find matching rows.
+   - **Troubleshooting Insight:** While more efficient than a table scan, an index scan can still be suboptimal if it processes a large portion of the index. Consider whether a more selective index could improve performance.
+
+3. **Index Seek:**
+   - **Description:** The database uses the index to directly retrieve the rows that match the query criteria.
+   - **Troubleshooting Insight:** This is generally an efficient operation and indicates that the index is being used effectively.
+
+4. Nested Loops Join:
+
+Description: The database joins two tables by iterating over each row in one table and finding matching rows in the other table.
+
+Troubleshooting Insight: Effective for small data sets, but performance can degrade significantly with larger data sets. Consider alternatives like merge join or hash join if performance is an issue.
+
+5. **Merge Join:**
+   - **Description:** The database joins two sorted datasets by merging them.
+   - **Troubleshooting Insight:** Efficient for large, sorted data sets but requires both inputs to be sorted on the join keys. If sorting is required, the performance benefit might be reduced.
+
+6. **Hash Join:**
+   - **Description:** The database creates a hash table for one of the input sets and probes it with the other set to find matches.
+   - **Troubleshooting Insight:** Useful for large, unsorted data sets but can be memory-intensive. If memory is limited, performance may suffer.
+
+7. **Sort:**
+   - **Description:** The database sorts the data according to specified criteria.
+   - **Troubleshooting Insight:** Sorting can be expensive, especially with large data sets. Indexes that support the desired order can avoid this step and improve performance.
+
+8. **Filter:**
+   - **Description:** The database applies a filter to the rows of a dataset to remove non-matching rows.
+   - **Troubleshooting Insight:** Indicates that a WHERE clause is being applied. Efficient indexing can reduce the need for extensive filtering operations.
+
+9. **Aggregate:**
+   - **Description:** The database performs aggregation operations like SUM, COUNT, AVG, MIN, MAX, etc.
+   - **Troubleshooting Insight:** Can be resource-intensive depending on the size of the dataset and the complexity of the aggregation. Indexes on the grouping columns can help improve performance.
+
+10. **Compute Scalar:**
+    - **Description:** The database performs a scalar computation, such as arithmetic or a function call, on a row-by-row basis.
+    - **Troubleshooting Insight:** Generally lightweight, but if repeated excessively, it might indicate inefficiencies that could be optimized.
+
+11. **Bitmap:**
+    - **Description:** The database uses bitmap operations, often to combine multiple conditions or indexes.
+    - **Troubleshooting Insight:** Can be efficient for complex conditions but may become costly with large data sets.
+
+
+					</UL>
+
+					
+			
+				<H2>Assessings Findings in Execution Plan</H2>
+				
+					<UL>
+						<LI>Red Flags Query Operators</LI>
+							<UL>
+								<LI>Looksups</LI>
+								<LI>Scans</LI>
+								<LI>Spools</LI>
+								<LI>Parallelism Operations</LI>
+							</UL>
+						<LI>Red Flags Elsewhere</LI>
+							<UL>
+								<LI>Dissimilar estimated versus actual row counts</LI>
+								<LI>High physical reads</LI>
+								<LI>Missing statistics alarms</LI>
+								<LI>Large sort operations</LI>
+								<LI>Implicit data type conversions</LI>
+							</UL>
+					</UL>
+			
+				<H2>Reasons why Execution Plan will never be used:</H2>
+				
+					<UL>
+						<LI>Contradictory language settings (if language settings are different on client and server, even at the Windows-level settings).</LI>
+						<LI>Contradictory collation settings, especially with Unicode. If collation settings differ between servers, server and client, or between a T-SQL batch and the objects they are opeating upon.</LI>
+						<LI>Contradictory SET options.</LI>
+						<LI>User with different default schemas not using schema prefix.</LI>
+					</UL>
+
+				<H2>Troubleshooting</H2>
+				
+					<UL>
+						<LI><B>Key Lookup</B></LI>
+						
+							<UL>
+								<LI>Whenever you see Key Lookups, you could make your query fast by just adding the fields you need to the non-clustered index. But the drawback, it will make the index wider (less data on each page). And if people frequently update one of those fields, update must also be done on the index.</LI>
+								<LI>Hover the mouse over the key lookup and look for the OUTPUT fields. Are they tiny and rarely utilized? Add them to the INCLUDE of the index, and see if the key lookup goes away.</LI>							
+							</UL>
+						
+						<LI><B>RID Lookup</B> - Consider creating a clustered index. Once clustered index is created, rebuild existing non clustered index as they are pointing to the heap.</LI>
+						
+						<LI><B>Nested Loop</B> - Effective for small data sets, but performance can degrade significantly with larger data sets. Consider alternatives like merge join or hash join if performance is an issue.</LI>
+
+					</UL>
+		
+			
+				<H2>So..... if you see an Index Scan operator, do you just either:</H2>
+				
+					<UL>
+						<LI>Create a non clustered index for the query or</LI>
+						<LI>Suggest to re write the query in such a way that it will use other column that will use existing non clustered index</LI>
+					</UL>
+					
+<PRE>
+ChatGPT:
+
+When you see an **Index Scan** in an SQL Server execution plan, it means that SQL Server is scanning the entire index to find the relevant rows, which could indicate inefficiency. To address this, both of the options you mentioned could be considered, but the most appropriate action depends on the specific context. Here's a breakdown of the two approaches:
+
+### Option A: Create a Non-clustered Index
+Creating a **non-clustered index** might be a good solution if:
+
+- The query is filtering on columns that don't already have an index or the existing index is not being used optimally (e.g., it doesn't cover all the necessary columns for the query).
+- The query performs operations like `JOIN`, `WHERE`, or `ORDER BY` on specific columns that could benefit from an index.
+- You want to reduce the number of rows that need to be scanned by SQL Server.
+
+However, **creating a non-clustered index** should be done with care, as adding too many indexes can negatively affect insert/update/delete performance, and maintaining them can increase the overhead on the system.
+
+### Option B: Rewrite the Query to Utilize Existing Indexes
+This option focuses on **optimizing the query itself** to ensure that SQL Server can take advantage of existing indexes more effectively. Some possible ways to rewrite the query include:
+
+- **Adjusting WHERE conditions**: Ensure that the query uses columns that are part of existing indexes, especially if the index is a **covering index** (i.e., includes all the columns needed by the query).
+- **Change the order of filters**: If there’s a composite index, reorder the conditions to match the left-to-right order of the columns in the index.
+- **Use proper joins and predicates**: Refactor the query to leverage indexed columns for joins or filters.
+
+In many cases, rewriting the query might be a more efficient approach, especially if an existing index could be used with minor changes. This avoids adding extra indexes and keeps the database schema simpler.
+
+### Best Practice:
+1. **Start by analyzing the current query and its execution plan**: Look at the **Index Scan** and check which columns are being scanned. 
+   - Are the columns part of an existing index? If yes, perhaps a query rewrite can help.
+   - If no index exists for the relevant columns, then adding a non-clustered index might be necessary.
+
+2. **Use the Query Tuning Advisor**: SQL Server provides tools like the **Query Store** and **Database Engine Tuning Advisor** that can help suggest indexes and query rewrites based on execution plans.
+
+In summary, it's not just a choice of either creating an index or rewriting the query; it's about determining which approach would be more efficient based on the query's structure and the indexes that are already in place. Often, a combination of both (optimizing the query and adding or adjusting indexes) leads to the best performance improvement.
+</PRE>
+*****************
+Hash Match - possible to appear if joining column doesn't have index created.
+
+
+*****************
+In the SELECT operator, if the Reason For Early Termination is Time Out, that's when you consider looking at the order of joins.
+
+
+************* SPOOL OPERATOR ****************
+In SQL Server, a spool operator is used by the query optimizer to temporarily store intermediate results of a query during execution. Spool operators can help optimize query performance by reducing the number of times a subquery or complex operation needs to be executed. There are several types of spool operators, each serving different purposes:
+
+Types of Spool Operators
+Table Spool (Lazy Spool):
+
+Purpose: Stores intermediate results in a temporary table and fetches rows only when needed. This can reduce redundant computations for repeated accesses.
+
+Behavior: Data is read and stored lazily, meaning it fetches rows on demand rather than all at once.
+
+Usage: Often used when the same data is accessed multiple times in a query, such as in nested loops or when the data might change between accesses.
+
+Index Spool (Eager Spool):
+
+Purpose: Similar to a table spool, but data is eagerly fetched and stored in a temporary index structure.
+
+Behavior: All qualifying rows are fetched and stored immediately.
+
+Usage: Typically used when the optimizer determines that a portion of the query will benefit from having an indexed structure for faster access.
+
+Row Count Spool:
+
+Purpose: Used to count the number of rows processed in a subquery or operation.
+
+Behavior: It creates a temporary structure to keep track of row counts.
+
+Usage: Often seen in scenarios where the query needs to know the number of rows before proceeding with further operations.
+
+Window Spool:
+
+Purpose: Used in queries with window functions to store and reuse the result set for window operations like ranking or aggregate calculations over a partition.
+
+Behavior: Stores intermediate results to be reused by window functions.
+
+Usage: Helps optimize complex window function queries by avoiding redundant calculations.
+
+When Spool Operators Are Used
+Subqueries: When the same subquery needs to be executed multiple times within a query, a spool operator can store the result of the subquery, reducing repeated executions.
+
+Common Table Expressions (CTEs): In some cases, the optimizer might use a spool to store the result of a CTE if it’s accessed multiple times.
+
+Complex Joins: Spool operators can be used to store intermediate results of complex join operations to optimize performance.
+
+Recursive Queries: For recursive CTEs, spool operators are often used to store intermediate results of each recursion level.
+
+Example
+Consider a query with a subquery that needs to be executed multiple times:
+
+sql
+Copy
+Edit
+SELECT e.EmployeeID, e.FirstName, e.LastName, d.DepartmentName
+FROM Employees e
+JOIN (
+    SELECT DepartmentID, DepartmentName
+    FROM Departments
+    WHERE IsActive = 1
+) d ON e.DepartmentID = d.DepartmentID;
+The optimizer might decide to use a spool operator to store the intermediate result of the subquery on the Departments table, especially if IsActive departments are accessed multiple times.
+
+Viewing Spool Operators in Execution Plans
+To see if a spool operator is used in a query, you can examine the execution plan. Here's how to do it:
+
+Graphical Execution Plan: In SQL Server Management Studio (SSMS), after executing a query, click on the "Include Actual Execution Plan" button before running the query again. Look for spool operators in the graphical plan.
+
+XML Execution Plan: Right-click on the execution plan and choose "Show Execution Plan XML" to see the detailed plan, including spool operations.
+
+Example of Execution Plan
+sql
+Copy
+Edit
+SET STATISTICS PROFILE ON;
+
+SELECT e.EmployeeID, e.FirstName, e.LastName, d.DepartmentName
+FROM Employees e
+JOIN (
+    SELECT DepartmentID, DepartmentName
+    FROM Departments
+    WHERE IsActive = 1
+) d ON e.DepartmentID = d.DepartmentID;
+
+SET STATISTICS PROFILE OFF;
+Running the above with SET STATISTICS PROFILE or examining the execution plan in SSMS would show if a spool operator is used and provide details on how the optimizer is handling intermediate results.
+
+Summary
+Spool operators: Temporarily store intermediate results to optimize query execution.
+
+Types: Include Table Spool (Lazy), Index Spool (Eager), Row Count Spool, and Window Spool.
+
+Usage: Helps reduce redundant computations, improve performance for subqueries, complex joins, CTEs, and window functions.
+
+Execution Plans: Spool operators can be identified by examining the execution plan in SQL Server.
+
+*********************************************
+When it comes to execution plans, DDL operations are generally less complex than DML operations, and they typically do not generate detailed execution plans like SELECT, INSERT, UPDATE, or DELETE statements. However, understanding the impact of DDL operations on the database can still be crucial, particularly in terms of performance and resource usage.
+
+Here are some key points about the execution and impact of common DDL operations:
+
+CREATE TABLE:
+
+Execution: Allocates space in the database and sets up the structure of the table according to the specified schema.
+
+Impact: Relatively quick operation, but if default values, constraints, or indexes are defined, additional resources may be used.
+
+CREATE INDEX:
+
+Execution: Builds an index on the specified columns of a table. This can involve scanning the entire table and sorting the index entries.
+
+Impact: Can be resource-intensive and time-consuming, especially for large tables. Index creation can temporarily lock the table, affecting concurrent operations.
+
+ALTER TABLE:
+
+Execution: Modifies the structure of an existing table. This can include adding or dropping columns, constraints, or indexes, and changing column data types.
+
+Impact: Depending on the operation, it can range from lightweight (e.g., adding a new column) to heavy (e.g., changing a column's data type or adding an index), potentially involving data reorganization and locking.
+
+DROP TABLE:
+
+Execution: Deletes a table and all of its data and associated indexes from the database.
+
+Impact: Generally quick, but can be slow if the table is very large or has many indexes. It also releases any space previously occupied by the table.
+
+TRUNCATE TABLE:
+
+Execution: Removes all rows from a table without logging individual row deletions. Resets any identity columns.
+
+Impact: Typically faster than a DELETE statement for large tables, as it is minimally logged. Cannot be rolled back if inside a transaction in some databases.
+
+DROP INDEX:
+
+Execution: Deletes an index from the database.
+
+Impact: Usually a quick operation, but can affect query performance if the index was being used frequently.
+
+Understanding Execution Plans for DDL
+Although DDL operations do not generate traditional execution plans like DML queries, some database systems provide information about the execution of DDL commands:
+
+Execution Time: The time taken to complete the DDL operation.
+
+Resource Usage: CPU and memory consumption during the operation.
+
+Locking: Information on any locks acquired during the operation, which can affect concurrent transactions.
+
+Logging: The extent of logging performed (e.g., minimal logging for TRUNCATE vs. full logging for DELETE).
+
+Monitoring and Optimization
+Monitoring Tools: Use database monitoring tools to track the performance and impact of DDL operations. Tools like SQL Server Management Studio, Oracle Enterprise Manager, or pgAdmin can provide insights.
+
+Maintenance Windows: Schedule heavy DDL operations during maintenance windows to minimize the impact on production systems.
+
+Batch Processing: For large operations, consider breaking them into smaller batches or using partitioning strategies to reduce locking and resource usage.
+
+While DDL execution plans might not be as detailed as DML execution plans, understanding the implications and performance characteristics of DDL commands is essential for efficient database management.
+*********************************************
+DML (Data Manipulation Language) commands, including UPDATE, DELETE, and INSERT, are used to modify data within a database. Execution plans for these commands provide insights into how the database engine executes the queries, helping to optimize performance and troubleshoot issues. Here's an overview of what to look for in execution plans for these DML operations:
+
+UPDATE Execution Plan
+Table/Index Scan:
+
+The database might perform a full table scan or index scan to locate the rows that need updating.
+
+Impact: Full scans can be expensive; using appropriate indexes can reduce the scan cost.
+
+Seek Operations:
+
+If an index exists on the column(s) used in the WHERE clause, the database can perform an index seek to efficiently locate the rows.
+
+Impact: Index seeks are more efficient than scans, especially for large tables.
+
+Key Lookup (Bookmark Lookup/RID Lookup):
+
+When an index seek finds the rows, a key lookup might be necessary to fetch the actual data from the table.
+
+Impact: This can be costly if many rows are being updated; covering indexes can help avoid key lookups.
+
+Clustered Index Update:
+
+If the table has a clustered index, the update might involve modifying the clustered index.
+
+Impact: Modifying the clustered index can be more expensive than a non-clustered index due to data reordering.
+
+Non-Clustered Index Update:
+
+Non-clustered indexes that include the updated columns will also need to be updated.
+
+Impact: Multiple index updates can increase the cost of the operation.
+
+DELETE Execution Plan
+Table/Index Scan:
+
+Similar to UPDATE, the database may perform a scan to find the rows to delete.
+
+Impact: Full scans are costly; using indexes can improve efficiency.
+
+Seek Operations:
+
+Efficiently locating the rows to delete using an index seek.
+
+Impact: Reduces the cost of locating rows compared to a full scan.
+
+Key Lookup:
+
+Fetching the actual data for deletion might require key lookups.
+
+Impact: Can be costly for large numbers of rows; covering indexes can mitigate this.
+
+Clustered Index Delete:
+
+Deleting rows from a table with a clustered index requires updating the index.
+
+Impact: Can be expensive due to data reordering.
+
+Non-Clustered Index Delete:
+
+Non-clustered indexes that include the deleted rows also need to be updated.
+
+Impact: Increases the overall cost if multiple indexes are affected.
+
+INSERT Execution Plan
+Table Insert:
+
+The database inserts new rows into the table.
+
+Impact: Generally straightforward, but the presence of indexes can increase complexity.
+
+Clustered Index Insert:
+
+If the table has a clustered index, inserting a row might involve placing it in the correct order.
+
+Impact: Can be more expensive than inserting into a heap due to the need for ordering.
+
+Non-Clustered Index Insert:
+
+Any non-clustered indexes that include the inserted columns must also be updated.
+
+Impact: Multiple index updates can increase the cost of the insert operation.
+
+Foreign Key Constraints:
+
+Checking foreign key constraints can add to the cost if they involve additional lookups.
+
+Impact: Ensures referential integrity but can slow down the insert operation.
+
+Triggers:
+
+If there are triggers on the table, they will execute as part of the insert operation.
+
+Impact: Triggers can add significant overhead depending on their complexity.
+
+Common Execution Plan Operators for DML
+Nested Loops Join: Often used for small data sets but can become inefficient for larger sets.
+
+Merge Join: Efficient for sorted data sets and large volumes.
+
+Hash Join: Useful for unsorted large data sets, can be memory-intensive.
+
+Sort: Indicates that the data needs to be sorted, which can be resource-intensive.
+
+Filter: Applies filtering criteria, often seen with WHERE clauses.
+
+Compute Scalar: Represents scalar computations, like calculations or function calls on a per-row basis.
+
+Bitmap: Used to handle complex conditions and combine multiple criteria.
+
+Optimizing DML Execution Plans
+Indexes: Ensure appropriate indexes exist on columns used in WHERE clauses and join conditions to improve seek operations.
+
+Statistics: Keep statistics up to date to help the query optimizer make better decisions.
+
+Batch Processing: For large updates or deletes, consider processing in smaller batches to reduce locking and resource contention.
+
+Covering Indexes: Design indexes that include all required columns to avoid key lookups.
+
+Avoid Unnecessary Columns: Only update or insert necessary columns to minimize index updates and logging.
+
+By analyzing and understanding execution plans, you can identify bottlenecks and optimize your DML operations for better performance.
+*********************************************
+regarding execution plans and indexes in sql server, if you encoutered an execution plan that shows an index scan, does that mean one of possible solutions is either you create a non clustered index for that query or you rewrite the query in such a way it will utilize one of the existing clusrtered index (for example, reordering the sort of data)?
+
+
+ChatGPT said:
+Yes, your understanding is correct! If you encounter an index scan in an execution plan, it typically means that SQL Server is scanning through the entire index (or table) to retrieve the required data. This often happens when:
+
+No suitable index exists to quickly locate the data.
+
+The query cannot utilize an existing index effectively.
+
+Solutions:
+Create a Non-Clustered Index
+If the query frequently filters, sorts, or joins on certain columns, creating a non-clustered index on those columns can improve performance. For example:
+
+sql
+Copy
+Edit
+CREATE NONCLUSTERED INDEX IX_YourTable_Column1_Column2 
+ON YourTable (Column1, Column2);
+This would allow SQL Server to perform an index seek instead of a scan.
+
+Rewrite the Query
+If there is an existing clustered index or a non-clustered index that could be used, you might rewrite the query to take advantage of it. For example:
+
+Adjust the sorting or filtering logic to align with the indexed columns.
+
+Avoid unnecessary columns in SELECT (reducing the need for lookups).
+
+Example:
+
+Query:
+
+sql
+Copy
+Edit
+SELECT * FROM YourTable WHERE Column1 = @Value ORDER BY Column2;
+Rewrite:
+If the clustered index sorts data by Column2 and Column1:
+
+sql
+Copy
+Edit
+SELECT * FROM YourTable WHERE Column1 = @Value ORDER BY Column2 ASC;
+When an Index Scan Is Acceptable
+If the query needs to retrieve a large portion of the rows, an index scan might actually be more efficient than an index seek followed by lookups.
+
+Avoid over-indexing: Having too many indexes can hurt performance during data modifications (inserts, updates, and deletes).
+
+Steps to Troubleshoot:
+Use SET STATISTICS IO ON to measure I/O.
+
+Use the Database Engine Tuning Advisor to get index recommendations.
+
+Analyze the missing index suggestions in the execution plan.
+*********************************************
+
+
+		</DIV>
+	</BODY>
+</HTML>	

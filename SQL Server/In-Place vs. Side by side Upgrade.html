@@ -1,0 +1,79 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>In-Place vs. Side by side Upgrade</TD></TABLE>
+		
+		<DIV CLASS="main">
+					
+			<TABLE WIDTH="100%">
+				<TR><TD CLASS="tabdata"></TD><TD CLASS="tabhead">In-Place</TD><TD CLASS="tabhead">Side by side Upgrade</TD></TR>					
+
+				<TR><TD CLASS="tabhead">Upgrade Effort</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Minimum.</LI>
+							<LI>Upgrade is automated.</LI>
+							<LI>No data migration is needed.</LI>
+						</UL></TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Efforts need to be planned.</LI>
+							<LI>Manual migration.</LI>
+							<LI>Data migration required.</LI>
+						</UL></TD></TR>
+				
+				<TR><TD CLASS="tabhead">Downtime</TD>
+					<TD CLASS="tabdata">Requires downtime.</TD>
+					<TD CLASS="tabdata">Minimum or no downtime. Production will be online while migration is taking place.</TD></TR>
+				
+				<TR><TD CLASS="tabhead">Configuration Changes</TD>
+					<TD CLASS="tabdata">Automated; application configuration is not needed since it would use the same connection information.</TD>
+					<TD CLASS="tabdata">						
+						<UL>
+							<LI>All configuration needs to be migrated over to new SQL Server instance..</LI>
+							<LI>Applications needs to change configuration to connect to new SQL Server instance.</LI>
+							<LI>Requires manual check of all configuration (system and user).</LI>
+						</UL></TD></TR>
+				
+				<TR><TD CLASS="tabhead">Data Transfer</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>No data transfer required.</LI>
+							<LI>All server integration changes remains intact and gets upgraded by the system (Replication, Linked Server, SQL Server Agent Jobs, etc).</LI>
+						</UL></TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Data transfer required and can be planned in staging manner.</LI>
+							<LI>All server integrations need to be created over to the new SQL Server instance.</LI>
+						</UL></TD></TR>
+				
+				<TR><TD CLASS="tabhead">Server name and IP</TD>
+					<TD CLASS="tabdata">No changes in server name and SQL Server instance.</TD>
+					<TD CLASS="tabdata">All application needs to change their connection to connect to the new server with new IP address.</TD></TR>
+				
+				<TR><TD CLASS="tabhead">Testing</TD>
+					<TD CLASS="tabdata">Will be relatively faster as same testing script and be used once upgrade is completed.</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Thourough testing required as there are chances to a configuration mismatch.</LI>
+							<LI>Testing needs to be planned and new testing script required since server instance changed for testing script.</LI>
+						</UL></TD></TR>
+				
+				<TR><TD CLASS="tabhead">Rollback</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Usually is rebuilding the whole system.</LI>
+							<LI>Requires backup of all configuration, databases including system databases.</LI>
+						</UL></TD>
+					<TD CLASS="tabdata">Very easy as production system remains online during migration. If testing fails, it can be remediated with no downtime rquired and all application can connect to previous online production system.</TD></TR>
+										
+			</TABLE>
+			
+		</DIV>
+	</BODY>
+</HTML> 
+

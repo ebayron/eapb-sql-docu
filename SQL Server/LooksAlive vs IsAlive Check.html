@@ -1,0 +1,53 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>LooksAlive vs IsAlive Check</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+
+				<P>In Windows Server, "LooksAlive" and "IsAlive" are health check mechanisms used in clustering to determine the status of a resource.</P> 
+
+			<H2>LooksAlive Health Check</H2>
+
+				<OL>
+					<LI>Runs every 5 seconds by default (can be changed by adjusting LooksAlivePollInterval property of Cluster service).</LI>
+					<LI>A lightweight check to see if the resource appears to be operational.</LI>
+					<LI>This check is not as thorough as the IsAlive check.</LI>
+					<LI>The check will succeed if it passes a simple status check, such as if the service appears to be running (even though it might not be operational) or if a network connection is still up.</LI>
+					<LI>If it fails, it calls "IsAlive" health check.</LI>
+				</OL>
+				
+
+			<H2>IsAlive Health Check</H2>
+
+				<OL>
+					<LI>Runs every 60 seconds by default (can be changed by adjusting IsAlivePollInterval property of Cluster service).</LI>
+					<LI>Performs more detailed check than LooksAlive to ensure the resource is fully operational.</LI>
+					<LI>In general, check involves a more in-depth validation, such as querying the application for a response or performing a more extensive health check to ensure the resource can handle requests properly.</LI>
+					<LI>For SQL Server resource:</LI>
+						<OL>
+							<LI>It checks and verifies the cached result of the internal IsAlive process in SQL Server resource DLL.</LI>
+							<LI>It will run <CODE>SELECT @@SERVERNAME</CODE> to ensure that SQL Server is responding to queries (does not ensure that all user databases are operational).</LI>
+							<LI>Retries 5 times to reconnect SQL Server.</LI>
+							<LI>If all 5 retry fails, the SQL Server resource fails (internal IsAlive process shuts down the SQL server service) and a failover event is triggered.</LI>
+						</OL>
+				</OL>
+								
+			<H2>Reference</H2>
+			
+				<UL>
+					<LI>https://sqlservercentral.com/blogs/sql-server-cluster-looksalive-and-isalive-check</LI>
+					<LI>https://www.ibm.com/docs/en/ibm-mq/9.2?topic=mscs-looksalive-isalive-polling</LI>
+					<LI>https://www.youtube.com/watch?v=-UoUEa-Nzd0</LI>
+					<LI>https://techcommunity.microsoft.com/t5/sql-server-support-blog/looksalive-and-isaliveimplementation-of-availability-groups/ba-p/317822</LI>
+				</UL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

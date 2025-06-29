@@ -1,0 +1,169 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Index</TD></TABLE>
+		
+		<DIV CLASS="main">
+
+			<H2>Definition</H2>
+			
+				<UL>
+					<LI>To speed up data retrieval.</LI>
+					<LI>Created on table and views.</LI>
+					<LI>If table has no index, then query engine checks every record from beginning to end (table scan).</LI>					
+				</UL>
+				
+			<H2>B Tree</H2>
+
+				<P>When creating an index, data pages are arranged in a logical order which is called a B Tree structure (will be created; it will drop the heap structure if there is).</P>
+				<P>Pages are spread into Root, Intermediate, and Leaf nodes.</P>
+						
+			<H2>How to Index?</H2>
+			
+				<UL>
+					<LI>Queries can seek on indexes where the columns in the WHERE clause are a left-based subset of the index key.</LI>
+					<LI>Columns used in equality predicates before inequality.</LI>
+				</UL>
+			
+			<H2>Types of Index</H2>
+			
+				<UL>
+					<LI>Clustered</LI>
+					<LI>Non Clustered</LI>
+					<LI>Unique</LI>
+					<LI>Covering</LI>
+					<LI>Filtered</LI>
+					<LI>Hash</LI>
+					<LI>Column Stored</LI>
+					<LI>Spatial</LI>
+					<LI>Full Text</LI>
+					<LI>XML</LI>
+				</UL>
+				
+			<H2>Clustered vs. Non Clustered</H2>
+			
+			<TABLE WIDTH=100%>
+			
+				<TR><TD WIDTH=100px CLASS="tabhead"></TD>
+					<TD CLASS="tabhead">Clustered</TD>
+					<TD CLASS="tabhead">Non Clustered</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Leaf Level</TD>
+					<TD CLASS="tabdata">Actual data pages of the table.</TD>
+					<TD CLASS="tabdata">Contains the key and include columns.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Structure and Storage</TD>
+					<TD CLASS="tabdata">Sorts and stores the data rows of the table or view in order based on the clustered index key. There can be only one clustered index per table, because the data rows themselves can be stored in only one physical order.</TD>
+					<TD CLASS="tabdata">Creates a separate structure that references the data rows. The data is stored in one place, and the index is stored in another place. There can be multiple non-clustered indexes per table.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Data Access</TD>
+					<TD CLASS="tabdata">Accessing data through a clustered index is typically faster because the data is physically ordered on the disk to match the index. This is especially true for range queries.</TD>
+					<TD CLASS="tabdata">Can be slower for large result sets because they involve additional lookups to fetch the actual data from the table after finding the indexed entries.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Use Case</TD>
+					<TD CLASS="tabdata">Ideal for columns with a large number of distinct values that are often used in range queries or for sorting results, such as primary keys.</TD>
+					<TD CLASS="tabdata">Best for columns that are used frequently in search conditions but are not the primary means of sorting the data, such as foreign keys or columns used in frequent JOIN operations.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Index Size</TD>
+					<TD CLASS="tabdata">Essentially the size of the table itself since it rearranges the data rows.</TD>
+					<TD CLASS="tabdata">Usually smaller than the clustered index because they contain only the indexed columns and pointers to the data rows.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Performance Impact</TD>
+					<TD CLASS="tabdata">Can improve the performance of queries that retrieve large ranges of data but can slow down data modification operations (insert, update, delete) because the data must be kept in order.</TD>
+					<TD CLASS="tabdata">Can enhance the performance of read operations for the specific columns indexed but may add overhead to data modification operations due to the need to maintain the index.</TD>
+				</TR>
+			
+			</TABLE>
+			
+			<UL>
+				<LI>Non Clustered Unique Index - Clustered Index Key is only at the leaf level.</LI>
+				<LI>Non Clustered Non Unique Index / Clustered Key is in INCLUDE column - Clustered Index Key is on the leaf level all the way up the root level.</LI>
+			</UL>
+			
+			<H2>Covering Index vs Included Columns Index</H2>
+			
+				<TABLE WIDTH="100%">
+					<TR><TD CLASS="tabdata"></TD><TD CLASS="tabhead">Covering Index</TD><TD CLASS="tabhead">Included Columns Index</TD></TR>					
+
+					<TR><TD CLASS="tabhead">Definition</TD>
+						<TD CLASS="tabdata">
+							One that answers a query entirely from its own intermediate pages, rather than goin all the way down the tree to leaf pages.
+							Includes all the columns a query needs, allowing the query to be satisfied entirely by the index without accessing the base table (or clustered index) data pages.
+							Essentially, the index "covers" the query.
+							This can significantly improve query performance because it reduces the number of I/O operations.</TD>
+						<TD CLASS="tabdata">
+							Includes additional non-key columns in the leaf level of the index.
+							These included columns are not part of the key but are stored in the index to provide additional data without increasing the size of the index key.
+							This can also improve query performance by reducing the need to access the base table or clustered index data pages.
+							</TD></TR>
+					
+					<TR><TD CLASS="tabhead">Syntax</TD>
+						<TD CLASS="tabdata">CREATE INDEX idx_CustomerName ON Customers (LastName, FirstName);</TD>
+						<TD CLASS="tabdata">CREATE INDEX idx_CustomerDetails ON Customers (LastName) INCLUDE (FirstName, Address);</TD></TR>
+					
+					<TR><TD CLASS="tabhead">Index Key vs. Included Columns</TD>
+						<TD CLASS="tabdata">Refers to any index that contains all the columns needed for a query. These columns can be part of the index key.</TD>
+						<TD CLASS="tabdata">Specifically refers to indexes where additional columns are added to the leaf level of the index as non-key columns using the INCLUDE clause.</TD></TR>
+						
+					<TR><TD CLASS="tabhead">Structure</TD>
+						<TD CLASS="tabdata">Can be achieved by having all necessary columns in the index key. However, this can lead to wider index keys which may not be efficient.</TD>
+						<TD CLASS="tabdata">Uses the INCLUDE clause to add extra columns to the index without expanding the key size, which can be more efficient in terms of index maintenance and size.</TD></TR>
+						
+					<TR><TD CLASS="tabhead">Purpose</TD>
+						<TD CLASS="tabdata">Ensure that the index contains all columns required by the query, allowing the query to be fully satisfied by the index</TD>
+						<TD CLASS="tabdata">Add additional columns to an index in a way that enhances query performance without unnecessarily increasing the size of the index key.</TD></TR>													
+				</TABLE>
+				
+				<P>The difference of adding a column in keys and adding a column in INCLUDE is adding the column in keys will be sorted. Columns in the include will not.</P>
+				
+			<H2>Index Fragmentation</H2>
+			
+				<P>Overtime, as indexes are subjected to data modification, gaps in data on page develop (internal fragmentation), and the logical ordering of the data no longer matches the physical ordering of the data (external fragmentation). Together, this is referred to as index fragmentaion. This is a normal behavior, but must be regulary addressed.</P>
+				<P>Heavily fragmented indexes can lead to poor query performance, especially if scans occur regularly. This is because less data can fit into the data cache and because more disk I/O is required.</P>
+				<P>Because of this, it is important that DBAs reguarly detect and remove index fragmentation from their databases on a regular basis.</P>
+			
+			<H2>Reorganize vs. Rebuild Index</H2>
+			
+				<UL>
+					<LI>After REORGANIZE, separately update index and column statistics.</LI>
+					<LI>After REBUILD, index statistics are automatically updated using FULLSCAN, but separately update column statistics.</LI>
+				</UL>
+			
+			<H2>Index Maintenance</H2>
+			
+				<UL>
+					<LI>Remove unused indexes first before duplicate indexes.</LI>
+					<LI>Duplicate indexes needs to be evaluated if really needed to be deleted.</LI>
+				</UL>
+			
+			<H2>Dropping Indexes</H2>
+			
+				<P>
+					When a Clustered Index is dropped, the data rows that were stored in the leaf level of the clustered index are stored in an unordered table (heap).
+					Dropping it can take time because in addition to dropping the clustered index, all Non Clustered Indexes on the table must be rebuilt to replace the Clustered Index keys with row pointers to the heap.
+				</P>
+
+				<P>
+					When dropping all indexes on a table, drop the Non Clustered Indexes first and the Clustered Index last.
+					That way, no indexes have to be rebuilt.
+					As for dropping Non Clustered Indexes, they aren't deleting any data, it's a metadata operation and the index pages are simply deallocated.
+				</P>
+
+				<P>
+					Think about TRUNCATE versus DELETE, TRUNCATE just deallocates the pages and you're done.
+					Dropping a Non Clustered Index is very similar, hence why dropping one is lightning fast when you do it (unless you are blocked).
+				</P>
+				
+		</DIV>
+	</BODY>
+</HTML>	

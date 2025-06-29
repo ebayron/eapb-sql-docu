@@ -1,0 +1,37 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Statistics</TD></TABLE>
+		
+		<DIV CLASS="main">
+
+			<H2>Statistics</H2>
+			
+				<UL>
+					<LI>A sampling of the data in a given table/index column.</LI>
+					<LI>The query optimizer relies on these for decision making.</LI>
+					<LI>Out of date or skewed statistics can lead to sub-optimal execution plans.</LI>
+				</UL>
+
+			<H2>Maintaining Statistics</H2>
+			
+				<UL>
+					<LI>When using REORGANIZE, separately update index and column statistics.</LI>
+					<LI>When using REBUILD, index statistics are automatically updated using FULLSCAN, but separately update column statistics.</LI>
+				</UL>
+				
+			<H2>How does Auto Update Statistics Work</H2>
+
+				<UL>
+					<LI>For tables with fewer than 500 rows, statistics update when at least 500 modifications (INSERTs, UPDATEs, DELETEs) occur.</LI>
+					<LI>For tables with more than 500 rows, statistics update when 20% of the total row count + 500 modifications occur.</LI>
+					<LI>For large tables (SQL Server 2016+ with TF 2371 enabled or default in SQL Server 2019+), the 20% rule is dynamically adjusted so that for very large tables, statistics update with a lower percentage of changes. This prevents waiting for millions of changes before an update.</LI>
+				</UL>
+
+		</DIV>
+	</BODY>
+</HTML>	

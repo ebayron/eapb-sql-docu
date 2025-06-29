@@ -1,0 +1,78 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Set up a Profiler</TD></TABLE>
+
+		<DIV CLASS="main">
+
+			<P>This set up demonstrates troubleshooting a stored procedure with performance issues.</P>
+			
+			<OL>
+				<LI>Open SQL Server Profiler and connect to your SQL Server instance.</LI>
+
+				<LI>Create a New Trace</LI>
+				
+					<OL>
+						<LI>Click File > New Trace.</LI>
+						<LI>Enter a Trace Name (e.g., "SP_Performance_Trace").</LI>
+					</OL>
+
+				<LI>Select a Trace Template</LI>
+
+					<OL>
+						<LI>Choose a template - select Standard.</LI>
+						<LI>Click Save to File (optional, for later analysis).</LI>
+					</OL>
+
+				<LI>Set Event Selection for Stored Procedures</LI>
+				
+					<OL>
+						<LI>In the Events Selection tab, click Show All Events and Show All Columns.</LI>
+						<LI>Expand Stored Procedures and check:</LI>
+							<UL>
+								<LI>RPC:Starting – Captures when a stored procedure starts.</LI>
+								<LI>RPC:Completed – Captures when a stored procedure ends.</LI>
+								<LI>SP:Completed</LI>
+								<LI>SP:StmtStarting – Captures individual SQL statements inside a stored procedure.</LI>
+								<LI>SP:StmtCompleted – Captures completion of SQL statements.</LI>
+							</UL>
+						<LI>Expand Performance and check: Showplan XML – Helps analyze execution plans.</LI>
+						<LI>Expand Errors and Warnings and check: Errors – Captures errors thrown by the procedure.</LI>
+					</OL>
+
+				<LI>Add Filters for Targeted Tracing</LI>
+				
+					<OL>
+						<LI>Click Column Filters.</LI>
+						<LI>Under Duration, set a minimum threshold (e.g., >5000ms) to capture slow queries.</LI>
+					</OL>
+
+				<LI>Start the Trace</LI>
+				
+					<OL>
+						<LI>Click Run to start tracing.</LI>
+						<LI>Execute the problematic stored procedure in SSMS or let it run in the application.</LI>
+						<LI>Monitor the results in SQL Server Profiler.</LI>
+					</OL>
+
+				<LI>Stop trace and analyze the results.</LI>
+
+					<OL>
+						<LI>Click Stop Trace..</LI>
+						<LI>Long execution times (high duration values).</LI>
+						<LI>Errors (e.g., deadlocks, missing indexes).</LI>
+						<LI>Expensive queries inside the stored procedure</LI>
+						<LI>Right-click a row and select Show Execution Plan for performance insights.</LI>
+					</OL>
+				<LI>Extra</LI>
+					<P>One scenario wherein a stored procedure was run to simulate a long running query. Inside it is a thousands of loops which executes milliseconds on each loop. Even if you filter the trace by greater than 500ms, SP:Completed for those statements will not appear - while not filtering by duration will generates thousands of rows in the trace.</P>
+					</BR><IMG SRC="IMG/04.png" WIDTH=100% /></BR>
+			</OL>
+
+		</DIV>
+	</BODY>
+</HTML>	

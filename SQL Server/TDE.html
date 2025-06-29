@@ -1,0 +1,177 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Transparent Data Encryption</TD></TABLE>
+		
+		<DIV CLASS="main">
+
+			<H2>Overview</H2>
+			
+				<UL>
+					<LI>A security feature in that encrypts the entire database at rest. This includes .mdf, .ldf, and backup files.</LI>
+					<LI>It helps protect sensitive data by preventing unauthorized access to physical database files without requiring changes to the application layer.</LI>
+					<LI>It uses a DEK stored in the database and protected by a certificate or an asymmetric key stored in the master database.</LI>
+					<LI>Encryption and decryption occur in real-time, making it "transparent" to applications.</LI>
+					<LI>Additional notes:</LI>
+						<UL>
+							<LI>TDE does not encrypt data in memory or during transmission; it only protects data at rest.</LI>
+							<LI>Encrypted databases cannot use features like database snapshots.</LI>
+							<LI>Performance impact is minimal but depends on workload and disk speed.</LI>
+							<LI>Always back up the TDE certificate and private key, as losing them means losing access to the database.</LI>
+						</UL>
+				</UL>
+				
+			<H2>Configuration</H2>
+			
+				<OL>
+					<LI>Create a Master Key in the Master Database - The master key encrypts the certificate used to protect the DEK.</LI>
+
+<PRE>
+USE master;
+GO
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'StrongPasswordHere';
+GO
+
+</PRE>
+
+					<LI>Create a Certificate in the Master Database - This certificate protects the DEK.</LI>
+					
+<PRE>
+USE master;
+GO
+CREATE CERTIFICATE MyServerCert  
+WITH SUBJECT = 'TDE Certificate';
+GO
+
+</PRE>
+					<LI>Backing Up the Certificate (for DR & Migration) - Since the certificate is required to restore an encrypted database, back it up securely.</LI>
+					
+<PRE>
+USE master
+GO
+
+BACKUP CERTIFICATE MyServerCert  
+TO FILE = 'D:\Backup\MyServerCert.cer'  
+WITH PRIVATE KEY (  
+    FILE = 'D:\Backup\MyServerCertKey.pvk',  
+    ENCRYPTION BY PASSWORD = 'AnotherStrongPassword');
+
+</PRE>
+
+					<LI>Create a DEK in the Target Database - This key is used to encrypt the database.</LI>
+
+<PRE>
+USE YourDatabaseName;
+GO
+CREATE DATABASE ENCRYPTION KEY  
+WITH ALGORITHM = AES_256  
+ENCRYPTION BY SERVER CERTIFICATE MyServerCert;
+GO
+
+</PRE>
+
+					<LI>Enable TDE on the Database</LI>
+
+<PRE>
+ALTER DATABASE YourDatabaseName  
+SET ENCRYPTION ON;
+GO
+
+</PRE>
+
+					<LI>Verifying TDE Status</LI>
+
+<PRE>
+SELECT db.name, db.is_encrypted  
+FROM sys.databases db  
+WHERE db.name = 'YourDatabaseName';
+
+SELECT *
+FROM sys.dm_database_encryption_keys;
+
+</PRE>
+				</OL>
+				
+			<H2>Restoring database on a different instance</H2>
+			
+				<OL>
+					<LI>On trying to restore a database on a different instance, you will get:</LI>
+					
+<PRE>
+Msg 33111, Level 16, State 3, Line 2
+Cannot find server certificate with thumbprint 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx'.
+
+</PRE>
+
+					<LI>Create the master key.</LI>
+					
+<PRE>
+USE master;
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'xxxxxxxx';
+
+</PRE>
+					<LI>Copy over the certificate and private key files.</LI>
+					
+					<LI>Create certificate.</LI>
+
+<PRE>
+USE master;
+CREATE CERTIFICATE TDE_Cert 
+FROM FILE = 'Z:\MyServerCert.cer'  
+WITH PRIVATE KEY (FILE = 'Z:\MyServerCertKey.pvk', DECRYPTION BY PASSWORD = 'xxxxxxxxxxxxxx');
+
+</PRE>
+	
+					<LI>Restore the database again.</LI>
+
+				</OL>
+			
+			<H2>Others</H2>			
+				
+				<UL>
+				
+					<LI>Disabling TDE (if needed)</LI>
+						
+						<OL>
+							<LI>Turn off encryption on the database.</LI>
+
+<PRE>
+ALTER DATABASE YourDatabaseName  
+SET ENCRYPTION OFF;
+
+</PRE>
+
+							<LI>Drop the Database Encryption Key (if no longer needed):</LI>
+
+<PRE>
+USE YourDatabaseName;
+GO
+DROP DATABASE ENCRYPTION KEY;
+GO
+
+</PRE>
+							<LI>Optionally drop the certificate and master key (if not used elsewhere)</LI>
+
+<PRE>
+USE master;
+GO
+DROP CERTIFICATE MyServerCert;
+GO
+DROP MASTER KEY;
+GO
+
+</PRE>
+							
+						</OL>
+						
+				</UL>
+				
+			
+				
+		</DIV>
+	</BODY>
+</HTML>	

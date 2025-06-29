@@ -1,0 +1,39 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Troubleshoot SQL Server Database Engine intermittently cannot connect to SSRS</TD></TABLE>
+
+		<DIV CLASS="main">
+			
+			<P><B>Problem</B>: SQL Server Database Engine intermittently cannot connect to SSRS.</P>
+
+			<P><B>Error log shows</B>:</P>
+			
+				<UL>
+					<LI>SQL Server Error 258, Shared Memoy Provider. Timeout Error</LI>
+					<LI>SQL Server Error 258, Unable to complete login process due to delay in login response</LI>
+				</UL>
+
+			<P><B>Troubleshooting</B>:</P>
+
+				<UL>
+					<LI>Generic connection failed found in SQL Server logs, SSRS logs, and Event Viewer logs.</LI>
+					<LI>Database Log Backup has also failed during that time.</LI>
+					<LI>Historical logs of CPU and Memory shows spike during that time.</LI>
+				</UL>
+
+			<P><B>Recommendation</B>:</P>
+	
+				<UL>
+					<LI>Check with NOC if there are any activies performed since the problem started.</LI>
+					<LI>Check with the job owner, if applicable, if large data are being processed during these times.</LI>
+					<LI>Check with the DB server owner if it is recommended to increase memory/CPU (whichever spiked).</LI>
+				</UL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

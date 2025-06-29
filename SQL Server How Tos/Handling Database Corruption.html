@@ -1,0 +1,57 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Handling Database Corruption</TD></TABLE>
+
+		<DIV CLASS="main">
+
+			<OL>
+				<LI>Executed DBCC CHECKDB WITH ESTIMATEONLY on InDialerData, File Server, and InData.</LI>
+					<UL>
+						<LI>Estimate disk consumption size of 3 DBs are around 230GB.</LI>
+						<LI>Free disk space is around 400GB.</LI>
+					</UL>
+				<LI>Run CurrentActivity/sp_who2 to monitor running queries. Stop DBCC CHECKDB if it blocks other queries.</LI>
+				<LI>Executed DBCC CHECKDB in InDialerData database.</LI>
+					<UL>
+						<LI>Found inconsistency errors in table MSmerge_contents, and index nc2MSmerge_contents.</LI>
+						<LI>Solution: Dropped then recreate the index. Rebuild did not remove the error.</LI>
+					</UL>
+				<LI>Executed DBCC CHECKDB in File Server database.</LI>
+					<UL>
+						<LI>No error found.</LI>
+					</UL>
+				<LI>Executed DBCC CHECKDB in InData database.</LI>
+					<UL>
+						<LI>repair_allow_data_loss is the minimum repair level for the errors found by DBCC CHECKDB (InData).</LI>
+						<LI>Msg 7105, Level 22, State 9, Line 1. The Database ID 10, Page (1:12533801), slot 0 for LOB data type node does not exist. This is usually caused by transactions that can read uncommitted data on a data page. Run DBCC CHECKTABLE.</LI>
+					</UL>
+				<LI>Below are the affected tables/indexes on InData database.</LI>
+					<TABLE WIDTH=100%>
+						<TR><TD WIDTH=100px CLASS="tabhead">Table</TD>
+							<TD CLASS="tabhead">Index</TD>
+						</TR>
+						<TR>
+							<TD CLASS="tabdata" ROWSPAN=3>base_Contact_Log_Footer<BR /><BR /></TD> <TD CLASS="tabdata">IX_Contact_Log_Footer_RowVersion_INCLUDE_ALL<BR /><BR /></TD>
+								<TR><TD CLASS="tabdata">IX_Contact_Log_Footer_Bus_No_Contact_ID<BR /><BR /></TD></TR>
+								<TR><TD CLASS="tabdata">IX_Contact_Log_Footer_Bus_No_End_Date<BR /><BR /></TD></TR>
+							<TD CLASS="tabdata">base_dw_Contacts_To_Summarize<BR /><BR /></TD><TD CLASS="tabdata">IX_dw_Contacts_To_Summarize_RowVersion_INCLUDE_ALL<BR /><BR /></TD>
+						</TR>
+					</TABLE>
+				<LI>Check the rows of each table.</LI>
+				<LI>Script out all DROP INDEX and CREATE INDEX for all indexes for each table (except primary key).</LI>
+				<LI>Re-create the indexes.</LI>
+					<UL>
+						<LI>Got error on creating IX_PersistentContactLog_RowVersion_INCLUDE_ALL index.</LI>
+						<LI>Tried DBCC CHECKTABLE('base_PersistentContactLog', REPAIR_REBUILD) but still get the error.</LI>
+						<LI>Run DBCC CHECKTABLE('base_PersistentContactLog', REPAIR_ALLOW_DATA_LOSS) and got no error.</LI> 
+					</UL>
+				<LI>Executed DBCC CHECKDB and DBCC CHECKTABLE again for confirmation.</LI>
+			</OL>			
+		</DIV>
+	</BODY>
+</HTML>	

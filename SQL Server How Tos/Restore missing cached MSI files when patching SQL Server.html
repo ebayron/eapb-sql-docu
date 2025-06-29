@@ -1,0 +1,40 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Restore missing cached MSI files when patching SQL Server</TD></TABLE>
+
+		<DIV CLASS="main">
+
+			</BR><IMG SRC="IMG/01.png" WIDTH=90% /></BR>
+			
+			<P>
+				When patching a SQL Server and you encounter a "The cached MSI file…is missing" error, it means that the server is missing some cached file needed by the patch installer.
+				Missing files can be retrieved from SQL Server Installers / Patch Installers.
+			</P>
+						
+			<OL>
+				<LI>Check the error and download the installer. In the screenshot above, it’s version 14.0.1000.169 or the SQL Server 2017 RTM.</LI>
+				<LI>Download <A HREF="https://github.com/suyouquan/SQLSetupTools/releases/">FixMissingMSI.</A></LI>
+				<LI>Locate the installer downloaded to scan and compare against the C:\Windows\Installer folder.</LI>
+					</BR><IMG SRC="IMG/02.png" WIDTH=90% /></BR>
+				<LI>Choose to fix all the related items first. In this case, items with SQL Server 2017 or with version 14.0.1000.169. <FONT COLOR="red">Do not use the Fix All button.<FONT COLOR="red"></LI>
+				<LI>Re-run the patch installer.</LI>
+				<LI>If there is a new error, repeat steps 3-5.</LI>
+				<LI>If the item is not present in the current source, look for details like Product Version to know what installer to download next. Then repeat from step 3 until you can proceed with the patch installation.</LI>			
+					</BR><IMG SRC="IMG/03.png" WIDTH=90% /></BR>
+			</OL>
+			
+			<P>Tip: To extract the file inside a patch installer, run below similar script in command prompt:</P>
+			
+<PRE>
+C:\Downloads>SQLServer2014-KB3130926-x64.exe /extract:C:\SQLDownloads
+
+</PRE>
+			
+		</DIV>
+	</BODY>
+</HTML>	

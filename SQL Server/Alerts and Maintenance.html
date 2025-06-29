@@ -1,0 +1,43 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Alerts and Automations</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Alerts</H2>
+		
+				<UL>
+					<LI>Indexes</LI>
+						<UL>
+							<LI>Unused Indexes - Check if it needs to be dropped.</LI>
+							<LI>Disabled Indexes - Either this needs to be dropped or forgot to be re-enabled.</LI>
+						</UL>
+					<LI>Etc</LI>
+						<UL>
+							<LI>Last success run of any job (database backup, index, etc) - Monitoring last success run can cover failed, disabled, and long running jobs.</LI>
+							<LI>Database that does not have Page Verify set to CHECKSUM - Lowers chance of corruption.</LI>
+							<LI>Always On secondary node is not synchronizing for the past n minutes - Proactively monitor AG health.</LI>
+						</UL>
+				</UL>
+				
+			<H2>Maintenance</H2>
+			
+				<UL>
+					<LI>Backup with DBCC CHECKDB. If database is too large, DBCC CHECKDB can be on a separate job and broken into stages:</LI>
+						<UL>
+							<LI>DBCC CHECKALLOC (ex: Monday)</LI>
+							<LI>DBCC CATALOG (ex: Tuesday)</LI>
+							<LI>DBCC TABLE (ex: scattered from Wednesday to Sunday)</LI>	
+						</UL>
+					<LI>Perform DIFF backups with CHECKSUM, if it finds a corruption, backup will fail. It is better to know this early than after restoration.</LI>
+					<LI>Rebuild and Reorganize Indexes</LI>
+				</UL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

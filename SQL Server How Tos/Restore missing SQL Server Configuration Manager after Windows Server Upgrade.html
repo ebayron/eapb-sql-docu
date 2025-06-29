@@ -1,0 +1,33 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Restore missing SQL Server Configuration Manager after Windows Server Upgrade</TD></TABLE>
+
+		<DIV CLASS="main">
+
+<PRE>
+## Run in PowerShell
+
+#2016
+$WshShell = New-Object -comObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft SQL Server 2016\Configuration Tools\SQL Server 2016 Configuration Manager.lnk")
+$Shortcut.TargetPath = "C:\Windows\SysWOW64\SQLServerManager13.msc"
+$Shortcut.Save()
+
+#2017
+$WshShell = New-Object -comObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft SQL Server 2017\Configuration Tools\SQL Server 2017 Configuration Manager.lnk")
+$Shortcut.TargetPath = "C:\Windows\SysWOW64\SQLServerManager14.msc"
+$Shortcut.Save()
+
+## Try System32 directory if msc file is missing in SysWOW64
+
+</PRE>
+			
+		</DIV>
+	</BODY>
+</HTML>	

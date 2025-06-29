@@ -1,0 +1,87 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Transaction Log</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Worst Maintenance Practices</H2>
+			
+				<UL>
+					<LI>Leaving default size and default path.</LI>
+					<LI>Taking wrong actions and performing wrong maintenance (Mixing shrink, truncate, clear).</LI>
+				</UL>	
+
+			<H2>How the Transaction Log Works</H2>
+			
+				<BR /><IMG SRC="IMG/12.PNG" WIDTH=40% /><BR />
+			
+				<UL>
+					<LI>Log is a series of smaller "files" called virtual log files.</LI>
+						<UL>
+							<LI>Active VLF - There is a record of an opened transaction.</LI>
+							<LI>Inactive VLF - No open transaction records, can be cleared in order to be re-used.</LI>
+						</UL>
+					<LI>Activity moves through log sequentially, fills the current VLF and goes to a next <MARK>inactive cleared</MARK> VLF.</LI>
+						<UL>
+							<LI>If there is inactive cleared VLF at the beginning of the file, it could be rolled over.</LI>
+							<LI>If there none, physical transaction log file will auto-grow.</LI>
+						</UL>
+					<LI>To mark an inactive VLF for re-use, issue a back up log.</LI>
+			
+						<BR /><IMG SRC="IMG/13.PNG" WIDTH=50% /><BR />
+				</UL>
+				
+			<H2>Excessive File Auto-Growth Causes:</H2>
+			
+				<UL>
+					<LI>Numerous VLFs to be added - this can negatively affect performance of the log (slow backup, recovery, commits, writes to the file).</LI>
+					<LI>Synchronous slight pause on auto-grow operation.</LI>
+					<LI>Windows call to extend a file (may cause file fragmentation).</LI>
+				</UL>
+			
+			<H2>Creation of Transaction Log File and its VLFs</H2>
+			
+				<UL>
+					<LI>Default size <MARK>should be 25% of the total size</MARK> of all data files created with the same CREATE DATABASE statement.</LI>		
+					<LI>New VLFs are created depending on the Growth Size and File Chunk rues.</LI>	
+						<TABLE WIDTH="40%">
+							
+								<TR><TD CLASS="tabhead">File Chunk</TD>				<TD CLASS="tabhead"># of VLFs</TD></TR>	
+								<TR><TD CLASS="tabdata">&lt64MB</TD>				<TD CLASS="tabdata">4</TD></TR>
+								<TR><TD CLASS="tabdata">&gt=64MB and &lt1GB</TD>	<TD CLASS="tabdata">8</TD></TR>
+								<TR><TD CLASS="tabdata">&gt=1GB</TD>				<TD CLASS="tabdata">16</TD></TR>
+						</TABLE>
+				</UL>
+				
+			<H2>How to Reduce Inactive VLFs</H2>
+			
+				<OL>
+					<LI>Run below script to check existing VLFs.</LI>
+
+<PRE>
+DBCC LOGINFO(0)
+-- FileSize = KB
+-- Status: 2 = Active, 0 = Inactive
+
+</PRE>
+					<LI>Back up log to clear it.</LI>
+					<LI>Shrink it to a minimum to reconfigure log file.</LI>
+					
+<PRE>
+DBCC SHRINKFILE(2)
+
+</PRE>
+					<LI>Run first step to check if VLFs are cleared. If not, retry steps 2 - 3.</LI>
+					<LI>Configure log file's initial size and auto growth.</LI>
+					<LI>Best practice is not to let VLFs &gt 100.</LI>
+					<LI>This can also aleviate/fix WRITELOG wait type.</LI>
+				</OL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

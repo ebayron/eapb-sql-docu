@@ -1,0 +1,143 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Data Compression</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+			
+				<P>
+					A feature that reduces the storage space required for data by encoding it more efficiently.
+					This can improve performance by reducing the amount of I/O operations needed to read and write data, as compressed data takes up less space on disk (compressed tables use extra CPU cycles to compress/decompress their contents).					
+				</P>
+
+				<P>
+					There are two types of data compression available: row-level compression, which reduces storage for individual rows, and page-level compression, which compresses data at the page level, often achieving higher compression ratios.
+					This applies for rowstore tables and indexes, and support columnstore and columnstore archival compression for columnstore tables and indexes.
+				</P>
+				
+				<P>
+					The idea is simple: Find repetitive sections of data in a table and store unique information just per row or page or column store index.
+					Modern compression algorithms can reduce the on-disk footprint by 40-60% or even more, depending on the type of data.
+				</P>
+				
+				<P>
+					For rowstore tables and indexes, use the data compression feature to help reduce the size of the database.
+					You can configure row and page compression on the following database objects:
+				</P>
+
+					<UL>
+						<LI>A whole table that is stored as a heap.</LI>
+						<LI>A whole table that is stored as a clustered index.</LI>
+						<LI>A whole nonclustered index.</LI>
+						<LI>A whole indexed view.</LI>
+						<LI>For partitioned tables and indexes, you can configure the compression option for each partition, and the various partitions of an object don't have to have the same compression setting.</LI>
+					</UL>
+					
+				<P>
+					For columnstore tables and indexes, all columnstore tables and indexes always use columnstore compression and this isn't user configurable.
+					Use columnstore archival compression to further reduce the data size for situations when you can afford extra time and CPU resources to store and retrieve the data.
+					You can configure columnstore archival compression on the following database objects:
+				</P>
+
+					<UL>
+						<LI>A whole columnstore table or a whole clustered columnstore index. Since a columnstore table is stored as a clustered columnstore index, both approaches have the same results.</LI>
+						<LI>A whole nonclustered columnstore index.</LI>
+						<LI>For partitioned columnstore tables and columnstore indexes, you can configure the archival compression option for each partition, and the various partitions don't have to have the same archival compression setting.</LI>
+					</UL>
+					
+				<H3>Row Compression</H3>
+				
+					<P>Stores data types using only the bytes necessary for the value.</P>
+					
+						<UL>
+							<LI>An int uses 4 Bytes of storage, whether it is 2 or 2,147,483,647. With row compression, 2 should 1 Byte of storage space.</LI>
+							<LI>Trailing zeroes, padded, and blank charactes are not stored, where applicable.</LI>
+						</UL>
+					
+				<H3>Page Compression</H3>
+				
+					<P>Prefix Compression</P>
+					
+						<UL>
+							<LI>Prefix value selected for efficient storage.</LI>
+							<LI>Storage values modified based on prefix values.</LI>
+						</UL>
+				
+					<P>Eliminates redundant storage of repeated values.</P>				
+
+			<H2>Implementation</H2>
+			
+				<OL>
+					<LI>Estimate compression cost. A good rule of thumb is if you have lots of read, PAGE compression is the suggested option - ROW compression if you have lots of updates, deletes and inserts.</LI>
+
+<PRE>
+EXEC sp_estimate_data_compression_savings
+	@schema_name = 'Sales',
+	@object_name = 'SalesOrderDetail',
+	@index_id = NULL,
+	@partition_number = NULL,
+	@data_compression = 'ROW'
+GO
+ 
+EXEC sp_estimate_data_compression_savings
+	@schema_name = 'Sales',
+	@object_name = 'SalesOrderDetail',
+	@index_id = NULL,
+	@partition_number = NULL,
+	@data_compression = 'PAGE'
+GO
+
+</PRE>
+
+					<LI>Issue the ALTER script (samples only).</LI>
+
+<PRE>
+-- for table
+ALTER TABLE Production.WorkOrder REBUILD PARTITION = ALL
+WITH (DATA_COMPRESSION = PAGE);
+
+ALTER TABLE Production.WorkOrder REBUILD PARTITION = ALL
+WITH (DATA_COMPRESSION = ROW);
+
+-- for index
+ALTER INDEX PK_SalesOrderDetail_SalesOrderID_SalesOrderDetailID
+ ON Sales.SalesOrderDetail
+ REBUILD PARTITION = ALL
+ WITH (DATA_COMPRESSION = PAGE)
+
+ALTER INDEX IX_SalesOrderDetail_ProductID
+ ON Sales.SalesOrderDetail
+ REBUILD PARTITION = ALL
+ WITH (DATA_COMPRESSION = ROW)
+ 
+-- disable compression
+ALTER TABLE Production.WorkOrder REBUILD PARTITION = ALL
+WITH (DATA_COMPRESSION = NONE);
+
+</PRE>
+
+						<P>
+							Note that "PARTITION = ALL" is specified.
+							For a database that all tables are in a single partition, this is fine, though it could have been written as "PARTITION = 1" with the same result.
+							Imagine, though, that you have very large tables that are partitioned.
+							In such a case, it may be prudent to compress one partition at a time, rather than hogging the system while you compress all partitions at once.
+						</P>
+					
+				</OL>
+				
+			<H2>Reference</H2>
+			
+				<UL>
+					<LI>https://www.sqlshack.com/use-sql-server-data-compression-save-space/</LI>
+					<LI>https://learn.microsoft.com/en-us/sql/relational-databases/data-compression/data-compression?view=sql-server-ver16</LI>
+				</UL>
+			
+		</DIV>
+	</BODY>
+</HTML>	

@@ -1,0 +1,35 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Waits</TD></TABLE>
+		
+		<DIV CLASS="main">
+
+			<H2>CX Packet</H2>
+			
+If there is high CX Packet:
+
+Query: SELECT * FROM sys.dm_os_waiting_tasks WHERE wait_type = 'CXPACKET'
+
+In resource_description column, there is a node ID.
+
+In the Execution Plan, one of the operators contains that node ID.
+
+This way, you can figure out where in your plan the threads are waiting.
+
+The goal is to never fix the CX Packet - it's to fix the stuff feeding it.
+
+And there is a myth that fixing high CX Packet is to adjust max dop to 1. It will fix the wait, but server will perform poorer due to it cannot perform parallelism.
+
+			<H2>SOS Scheduler</H2>
+			
+				<UL>
+					<LI>A good indicator of CPU pressure.</LI>
+				</UL>
+		</DIV>
+	</BODY>
+</HTML>	

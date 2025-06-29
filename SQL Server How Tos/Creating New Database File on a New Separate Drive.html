@@ -1,0 +1,55 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Creating New Database File on a New Separate Drive</TD></TABLE>
+
+		<DIV CLASS="main">
+
+			<OL>
+				
+				<LI>Make sure directory of the new path already exists.</LI>
+
+<PRE>
+master..xp_cmdshell 'md Q:\SQL_DATA\DEFAULT'
+GO
+
+</PRE>				
+				<LI>Create file - this may take 20-30 seconds.</LI>
+
+<PRE>
+ALTER DATABASE DWData ADD FILE ( NAME = DWData2, FILENAME = 'Q:\SQL_DATA\DEFAULT\DWData2.mdf', SIZE = 524288MB, FILEGROWTH = 3072MB )
+
+</PRE>				
+				<LI>Lockdown the older data file's growth.</LI>	
+
+<PRE>
+ALTER DATABASE DWData MODIFY FILE ( NAME = DWData, FILEGROWTH = 0MB )
+
+</PRE>				
+				<LI>Confirm settings - 0 growth on older data file, and new growth happening on new data file.</LI>
+				
+<PRE>
+USE dwdata 
+SELECT
+	@@servername AS Server,
+	db_name() AS DB,
+	name AS [File],
+	filename AS [FileName],
+	CAST((CAST(size/128.0 AS DECIMAL(10,2)))/1024.0 AS MONEY) AS SizeGB,
+	CAST((CAST(FILEPROPERTY(name, 'SpaceUsed')/128.0 AS DECIMAL(10,2)))/1024.0 AS MONEY) AS UsedGB,
+	CAST((CAST(size/128.0-(FILEPROPERTY(name, 'SpaceUsed')/128.0) AS DECIMAL(10,2)))/1024.0 AS MONEY) AS AvailableGB,
+	CAST(((CAST(Growth AS BIGINT) * 8 / 1024.0))/1024.0 AS MONEY) AS GrowthGB
+FROM sysfiles
+ORDER BY filename DESC
+
+</PRE>
+				
+			</OL>
+
+		</DIV>
+	</BODY>
+</HTML>	

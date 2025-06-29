@@ -1,0 +1,140 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Transaction Isolation Levels</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+		
+				<P>
+					SQL Server supports several transaction isolation levels that determine the visibility of changes made by one transaction to other concurrent transactions.
+					Each isolation level balances between consistency and concurrency, affecting several phenomena.
+					Choosing the appropriate isolation level depends on the specific requirements for data consistency and the acceptable level of concurrency for your application.
+				</P>
+				
+				<UL>
+					<LI><B>Dirty Read</B>
+						<UL>
+							<LI>Reads uncommitted changes.</LI>
+							<LI>A dirty read happens when one transaction is permitted to read data that has been modified by another transaction that has not yet been committed.</LI>
+							<LI>In most cases, this would not cause a problem. However, if the first transaction is rolled back after the second reads the data, the second transaction has dirty data that does not exist anymore.</LI>
+						</UL></LI>					
+					<LI><B>Lost Update</B>
+						<UL>
+							<LI>Happens when two transactions read and update the same data.</LI>
+							<LI>Happens on Read Uncommitted and Read Committed Isolation Level.</LI>
+						</UL></LI>
+					<LI><B>Non Repeatable Read</B> - Data read twice may differ if another transaction modified it in between.</LI>
+					<LI><B>Phantom Read</B> - INSERTed rows can appear in subsequent reads.</LI>
+						<BR /><IMG SRC="IMG/11.PNG" WIDTH=30% /><BR />
+				</UL>
+				
+				<TABLE WIDTH=100% ALIGN="center">
+					<TR><TD CLASS="tabhead">Isolation</TD><TD CLASS="tabhead">Description</TD><TD CLASS="tabhead">Dirty Reads</TD><TD CLASS="tabhead">Lost Update</TD><TD CLASS="tabhead">Non Repeatable Reads</TD><TD CLASS="tabhead">Phantom Read</TD><TD CLASS="tabhead">Use Case</TD></TR>
+					<TR>
+						<TD CLASS="tabdata">Read Committed</TD>
+						<TD CLASS="tabdata">Default isolation level in SQL Server. Transactions cannot read data that is being modified by other transactions until it is committed.</TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata">General-purpose transactions where a balance between data consistency and concurrency is needed.</TD></TR>
+					<TR>
+						<TD CLASS="tabdata">Read Uncommitted</TD>
+						<TD CLASS="tabdata">This is the least restrictive of all the isolation level. Allows transactions to read data that has been modified but not yet committed by other transactions. Same as <CODE>WITH(NOLOCK)</CODE> hint.</TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata">Scenarios where high performance is critical and data inconsistencies can be tolerated, such as in reporting systems.</TD></TR>
+					<TR>
+						<TD CLASS="tabdata">Repeatable Read</TD>
+						<TD CLASS="tabdata">Ensures that if a transaction reads a row, no other transaction can modify that row until the first transaction completes. Basically holds the shared lock until end of transaction.</TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B><span>&#10003;</span></B></TD>
+						<TD CLASS="tabdata">Scenarios where repeated reads of the same data must return the same results, such as in financial applications.</TD></TR>
+					<TR>
+						<TD CLASS="tabdata">Serializable</TD>
+						<TD CLASS="tabdata">
+							The strictest isolation level.
+							This will place a range lock which prevents other transactions from inserting new rows within that range.
+							Ensures complete isolation from other transactions, preventing other transactions from inserting, updating, or deleting rows that would affect the result set.</TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata">Critical transactions where complete consistency is required, such as in bank transfers.</TD></TR>
+					<TR>
+						<TD CLASS="tabdata">Snapshot</TD>
+						<TD CLASS="tabdata">Ensures complete isolation from other transactions, preventing other transactions from inserting, updating, or deleting rows that would affect the result set.</TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata"><B>X</B></TD>
+						<TD CLASS="tabdata">Applications that require consistent reads without blocking writes, such as OLTP systems.</TD></TR>
+				</TABLE>
+				
+			<H2>Scenarios</H2>
+			
+				<UL>
+					<LI><B>Read Committed</B></LI>
+						<OL>
+							<LI>Consider a scenario where we need to ensure data consistency while reading from a database, but we also want to allow for a reasonable level of concurrency.</LI>
+							<LI>There is a record in a table that has a value 100.</LI>
+							<LI>Transaction 1: Updates the value into 150 but transaction is not yet committed yet.</LI>
+							<LI>Transaction 2: Reads the value and returns the value 100.</LI>
+							<LI>If Transaction 1 committed, Transaction 2 returned the inaccurate result. However, if Transaction 1 rolled back, Transaction 2 returned an correct result.</LI>
+						</OL>
+					<LI><B>Read Uncommitted</B></LI>
+						<OL>
+							<LI>Consider a scenario where you have a reporting application that generates real-time reports from a large database. The data in this database is frequently updated, and high read performance is more critical than absolute consistency for the report generation.</LI>
+							<LI>There is a record in a table that has a value 100.</LI>
+							<LI>Transaction 1: Updates the value into 150 but transaction is not yet committed yet.</LI>
+							<LI>Transaction 2: Reads the value and returns the value 150.</LI>
+							<LI>If Transaction 1 committed, Transaction 2 returned the correct result. However, if Transaction 1 rolled back, Transaction 2 returned an inaccurate result.</LI>
+						</OL>
+					<LI><B>Repeatable Read</B></LI>
+						<OL>
+							<LI>Consider a scenario where maintaining a consistent view of data throughout a transaction is crucial.</LI>
+							<LI>A transaction involves viewing a value and then updating it afterwards.</LI>
+							<LI>If the transaction come into the point that it will need to read again the value, it should still be the same.</LI>
+						</OL>
+					<LI><B>Serializable</B></LI>
+						<OL>
+							<LI>Consider a scenario where strict data consistency and isolation are critical, such as in a ticket booking system for a concert.</LI>
+							<LI>There is a record in a table that has a value 0.</LI>
+							<LI>Transaction 1: Updates the value into 1 but transaction is not yet committed yet.</LI>
+							<LI>Transaction 2: Reads the value but needs to wait for Transaction 1 until it commit or roll back.</LI>
+							<LI>Transaction 2 will show result of the final value.</LI>
+						</OL>
+					<LI><B>Snapshot</B></LI>
+						<OL>
+							<LI>Consider a scenario where an online retail system needs to generate consistent reports while allowing concurrent updates to the database without blocking or being blocked by other transactions. This is ideal for this situation because it allows transactions to work with a consistent view of the data as it was at the beginning of the transaction, without being affected by other transactions.</LI>
+							<LI>There is a table with 3 records.</LI>
+							<LI>Transaction 1 reads the table (assuming it takes a minute to generate the result).</LI>
+							<LI>Transaction 2 inserts new rows on that same table during processing of Transaction 1.</LI>
+							<LI>Transaction 1 generates result without the inserted rows of Transaction 2 (and without blocking).</LI>
+						</OL>			
+					
+				</UL>
+				
+			<H2>Repeatable Read vs. Serializable</H2>
+			
+				<P>
+					Repeatable Read prevents only non-repeatable read.
+					This isolation level ensures that the data that one transaction has read, <MARK>will be prevented from being updated or deleted by any other transaction, but it does not prevent new rows from being inserted</MARK> by other transactions resulting in phantom read concurrency problem.</P>
+				
+				<P>
+					Serializable prevents both non-repeatable read and phantom read problems.
+					This isolation level ensures that the data that one transaction has read, <MARK>will be prevented from being updated, deleted, or inserted by any other transaction.</MARK></P>
+			
+		</DIV>
+	</BODY>
+</HTML>	

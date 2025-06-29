@@ -1,0 +1,107 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Database Corruption</TD></TABLE>
+		
+		<DIV CLASS="main">
+		
+			<H2>Worst Practices</H2>
+			
+				<UL>
+					<LI>"It will not happen to me" mindset.</LI>
+					<LI>Pressing the PANIC button when it happens (taking the wrong actions).</LI>
+						<UL>
+							<LI>Restart SQL Server - wastes time and might have problem starting the instance making it worse.</LI>
+							<LI>Immeidatelly jump to a last resort and cause data loss without working through options.</LI>
+								<UL>
+									<LI>Running the database in Emergency mode.</LI>
+									<LI>Running repair.</LI>
+									<LI>Rebuilding transaction log.</LI>
+								</UL>
+							<LI>Detach a suspect database - It will fail to attach again in SQL Server 2005; you can't detach now in SQL Server 2008 and newer version).</LI>
+							<LI>Changing the plan in the middle of the process.</LI>
+						</UL>
+				</UL>
+				
+			<H2>CHECKDB on a restored database</H2>
+				
+				<P>You can also do CHECKDB on a restored database. Double bonus here - restoration has been tested, and are able to do CHECKDB. But the problem is, once you detect corruption, there is a small chance that that came from the restored database not really on the source.</P>
+
+			<H2>Monitoring Corruption</H2>
+			
+				<P>You want to know about these errors before the users.</P>
+			
+				<UL>
+					<LI>Make sure Page Verify option is set to CHECKSUM.</LI>
+					<LI>Set alerts for severity 19+ errors.</LI>
+					<LI>Set alerts for SQL Server 823 - 825.</LI>
+				</UL>
+			
+			<H2>Fixing Corruption</H2>
+			
+				<OL>
+					<LI>Check the exact status of the database (sys.databases).</LI>
+					
+						<P>Status of interest:</P>
+						
+						<UL>
+							<LI>Suspect - SQL encountered corruption during rollback or crash recovery.</LI>
+							<LI>Recovery Pending - After restart, recovery could not start. It is possible due to file is missing/renamed/inaccessible. In this case, a restart/offline database is needed.</LI>
+						</UL>
+					
+					<LI>Read through SQL Error Logs and Windows Event Logs.</LI>
+					
+						<UL>
+							<LI>Especialy if the database is suspect.</LI>
+							<LI>Corruption errors are logged.</LI>
+							<LI>Inaccessible file errors are logged.</LI>
+							<LI>CheckDB output is logged.</LI>
+							<LI>Windows Event logs may show non-SQL related logs.</LI>
+						</UL>
+					
+					<LI>Estimate how much DBCC CHECKDB will consume in tempdb. If it blocks other queries, assess if you can proceed. If disk space is sufficient, proceed with the next step.</LI>
+
+<PRE>
+DBCC CHECKDB(0) WITH ESTIMATEONLY
+
+</PRE>
+
+					<LI>Check the errors.</LI>
+	
+<PRE>
+DBCC CHECKDB(0)
+WITH NO_INFOMSGS, ALL_ERRORMSGS, TABLERESULTS
+
+</PRE>
+
+					<LI>Make an educated decision as to a fix. If the damage is:</LI>
+					
+						<UL>
+							<LI>just in one or more non-clustered indexes, dropping and re-creating them will remove the corruption.</LI>
+							<LI>in a single file or filegroup, consider a file or filegroup restore.</LI>
+							<LI>in a small numnber of pages, consider a page restore.</LI>
+							<LI>in a non-critical table, consider truncating the table and importing from backup.</LI>
+							<LI>widespread, consider restoring from backup. Or repairing and syncing in missing data from backup.</LI>
+						</UL><BR />
+
+					<LI>If the IndexID is 2, that is Non-clusterd index.</LI>
+					
+						<UL>
+							<LI>If the Repair Level is repair_rebuild, the initial action should be <CODE>DBCC CHECKDB(0, REPAIR_REBUILD)</CODE>. But the problem is the database should be in single_user mode.</LI>
+							<LI>Since these are non-clustered indexes, we could just re-create (not rebuild) them instead.</LI>
+						</UL><BR />
+						
+					<LI>If Repair Level is repair_rebuild, it is also most likely the repair will not cause any data loss.</LI>
+					
+					<LI>See also: <A HREF="../SQL Server How Tos/Troubleshoot Error 824 Severity 24.html" TARGET="_blank">Troubleshoot Error 824 Severity 24</A></BR></LI>
+				</OL>
+			
+				
+			
+		</DIV>
+	</BODY>
+</HTML>	

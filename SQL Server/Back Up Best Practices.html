@@ -1,0 +1,30 @@
+
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Back Up Best Practices</TD></TABLE>
+		
+		<DIV CLASS="main">
+
+			<UL>
+				<LI>Run DBCC regulary.</LI>
+				<LI>Verify CHECKSUM.</LI>
+				<LI>Run Verify Only.</LI>
+				<LI>Run a restore.</LI>
+			</UL>
+			
+			<P>Factors That Improve Backup Compression Ratio
+
+<UL>
+<LI>High free space in .mdf files → More compression.</LI>
+<LI>Low fragmentation & well-structured data → Better compression.</LI>
+<LI>Fewer LOB (Large Object) data types (TEXT, IMAGE, VARBINARY(MAX)) → LOB data is harder to compress.</LI>
+<LI>Row/Page Compression enabled → Already compressed data may reduce backup compression benefits.</LI>
+</UL>
+				
+		</DIV>
+	</BODY>
+</HTML>	

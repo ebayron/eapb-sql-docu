@@ -1,0 +1,82 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Temporary Table vs. Table Variable</TD></TABLE>
+		
+		<DIV CLASS="main">
+					
+			<TABLE WIDTH="100%">
+				<TR><TD CLASS="tabdata"></TD><TD CLASS="tabhead">Temporary Table</TD><TD CLASS="tabhead">Table Variable</TD></TR>					
+
+				<TR><TD CLASS="tabhead">When to Use Each</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>For large datasets.</LI>
+							<LI>When you need indexing, statistics, or complex constraints.</LI>
+							<LI>When the temporary data must survive transaction rollbacks.</LI>
+							<LI>When data needs to be shared across multiple stored procedures or batches within the same session.</LI>
+						</UL></TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>For small datasets.</LI>
+							<LI>When the scope is limited to a single batch, stored procedure, or function.</LI>
+							<LI>When transaction rollback behavior is not a concern.</LI>
+							<LI>For lightweight, in-memory storage needs with less overhead.</LI>
+						</UL></TD></TR>
+				
+				<TR><TD CLASS="tabhead">Syntax</TD>
+					<TD CLASS="tabdata">Supports DDL statements so structure can be changed after creation.</TD>
+					<TD CLASS="tabdata">Do not support DDL statements. Structure can't be changed.</TD></TR>
+				
+				<TR><TD CLASS="tabhead">Scope and Visibility</TD>
+					<TD CLASS="tabdata">#TempTable is visibile only to the session that created it and automatically dropeed when the session ends. ##TempTable is visible to all sessions and exists until the last session referencing it is closed.</TD>
+					<TD CLASS="tabdata">Visible only within the batch, stored procedure, or function where they are declared. Automatically cleaned up when the batch, stored procedure, or function ends.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Storage and Performance</TD>
+					<TD CLASS="tabdata">Stored in TempDB. Can handle larger amounts of data and perform better with larger datasets due to optimizations such as indexing.</TD>
+					<TD CLASS="tabdata">Stored in TempDB. Generally recommended for smaller datasets due to memory optimization.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Transaction Behaviors</TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Participate in transactions, and their data can be rolled back or committed.</LI>
+							<LI>Can be indexed and can have constraints such as primary keys, unique keys, and foreign keys.</LI>
+							<LI>Can participate in explicit transactions.</LI>
+						</UL></TD>
+					<TD CLASS="tabdata">
+						<UL>
+							<LI>Does not participate in transactions in the same way as temporary tables. They are not affected by transaction rollbacks.</LI>
+							<LI>Limited support for indexing (only primary keys and unique constraints can be defined at declaration).</LI>
+							<LI>Can't participate in explicit transactions.</LI>
+						</UL></TD></TR>
+					
+				<TR><TD CLASS="tabhead">User-Defined Functions</TD>
+					<TD CLASS="tabdata">Not allowed inside UDF.</TD>
+					<TD CLASS="tabdata">Allowed inside UDF.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Truncate/Recompile/Parallelism</TD>
+					<TD CLASS="tabdata">Yes.</TD>
+					<TD CLASS="tabdata">No.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Statistics and Optimization:</TD>
+					<TD CLASS="tabdata">SQL Server maintains statistics on temporary tables, which can improve query performance.</TD>
+					<TD CLASS="tabdata">Do not have statistics (1 row), which can sometimes lead to suboptimal query plans.</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Metadata Overhead</TD>
+					<TD CLASS="tabdata">Low</TD>
+					<TD CLASS="tabdata">Lowest</TD></TR>
+					
+				<TR><TD CLASS="tabhead">Lock Overhead</TD>
+					<TD CLASS="tabdata">Normal</TD>
+					<TD CLASS="tabdata">Lowest</TD></TR>
+										
+			</TABLE>
+			
+		</DIV>
+	</BODY>
+</HTML> 
+
