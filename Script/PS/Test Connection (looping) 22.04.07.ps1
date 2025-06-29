@@ -1,0 +1,1 @@
+do { test-netconnection amb-m32dwa01 -port 1433 } while (1 -eq 1)

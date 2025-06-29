@@ -1,0 +1,17 @@
+-- resize multiple images in MS Word
+-- click on the 1st image then create&run Macro
+-- adjust scaleheight/width as needed.
+
+Sub resize()
+Dim i As Long
+    With ActiveDocument
+        For i = 1 To .InlineShapes.Count
+            With .InlineShapes(i)
+                If .Type <> wdInlineShapeHorizontalLine Then -- Prevents Run-time error '4693': This member cannot be accessed on a horizontal line.
+                    .ScaleHeight = 70
+                    .ScaleWidth = 70
+                End If
+            End With
+            Next i
+    End With
+End Sub
