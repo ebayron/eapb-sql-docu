@@ -1,0 +1,141 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+
+	<BODY CLASS="linklist">
+
+		<TABLE CLASS="sidebar" WIDTH="100%" ALIGN="center">
+			<TR>
+				<TD CLASS="linklist">	
+
+					<P><B>General Overview</B></P>
+										
+					<A CLASS="linklist" HREF="DML/Overview/OS and Hardware (sys.dm_os_windows_info, xp_readerrorlog).sql" TARGET="body">OS and Hardware</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/CPU (sys.dm_os_sys_info, xp_instance_regread, sys.dm_os_schedulers).sql" TARGET="body">CPU</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/Memory (sys.dm_os_sys_memory, sys.configurations, sys.dm_os_sys_info, sys.dm_os_process_memory).sql" TARGET="body">&#9733 Memory</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/Services (sys.dm_server_services).sql" TARGET="body">Services</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/Cluster Properties (sys.dm_os_cluster_nodes, sys.dm_os_cluster_properties).sql" TARGET="body">Cluster Properties</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/Network (sys.dm_tcp_listener_states).sql" TARGET="body">Network</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/Trace Flags and Error Logs (DBCC TRACESTATUS, sys.dm_os_server_diagnostics_log_configurations).sql" TARGET="body">Trace Flags and Error Logs</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/Instance and Server Up Time (syslogins, sys.dm_os_sys_info, SERVERPROPERTY).sql" TARGET="body">Instance and Server Up Time</A></BR>					
+					<A CLASS="linklist" HREF="DML/Overview/System Configurations (sys.configurations).sql" TARGET="body">System Configurations</A></BR>					
+					
+					<P><B>Backup</B></P>
+					
+					<A CLASS="linklist" HREF="DML/Backup File Information (RESTORE FILELISTONLY FROM DISK).sql" TARGET="body">Backup File Information</A></BR>
+					<A CLASS="linklist" HREF="DML/Backup History (msdb.dbo.backupset).sql" TARGET="body">Backup History</A></BR>
+					<A CLASS="linklist" HREF="DML/Backup Latest (msdb.dbo.backupset).sql" TARGET="body">Backup Latest</A></BR>
+					<A CLASS="linklist" HREF="DML/Backup Progress (sys.dm_exec_requests, sys.dm_exec_sql_text).sql" TARGET="body">&#9733 Backup Progress</A></BR>
+					<A CLASS="linklist" HREF="DML/Restoring TLogs of Multiple Databases (sys.databases, msdb.dbo.backupset, msdb.dbo.backupmediafamily).sql" TARGET="body">Restoring TLogs of Multiple Databases</A></BR>
+					<A CLASS="linklist" HREF="DML/Restore History (msdb.dbo.backupmediafamily, msdb.dbo.backupset, msdb.dbo.restorefile, msdb.dbo.restorefilegroup, msdb.dbo.restorehistory).sql" TARGET="body">Restore History</A></BR>
+					
+					<P><B>Constraints</B></P>
+
+					<A CLASS="linklist" HREF="DML/Enable and Disable Foreign Key (sys.foreign_keys).sql" TARGET="body">Enable and Disable Foreign Key</A></BR>
+					<A CLASS="linklist" HREF="DML/Drop and Create Foreign Key (sys.columns, sys.foreign_key_columns, sys.foreign_keys).sql" TARGET="body">Drop and Create Foreign Key</A></BR>
+					<A CLASS="linklist" HREF="DML/View Constraints (sys.objects).sql" TARGET="body">View Constraints</A></BR>
+					
+					<P><B>Date</B></P>
+					
+					<A CLASS="linklist" HREF="DML/Add or Subract from a Date.sql" TARGET="body">Add or Subract from a Date</A></BR>
+					<A CLASS="linklist" HREF="DML/First and Last Day of Month.sql" TARGET="body">First and Last Day of Month</A></BR>
+					<A CLASS="linklist" HREF="DML/Get Difference Between Two Dates.sql" TARGET="body">Get Difference Between Two Dates</A></BR>
+					<A CLASS="linklist" HREF="DML/Age Bracket.sql" TARGET="body">Age Bracket</A></BR>
+					
+					<P><B>Database, Schema, Table, and Column</B></P>
+													
+					<A CLASS="linklist" HREF="DML/Database Properties (sys.databases, sys.master_files).sql" TARGET="body">Database Properties</A></BR>
+					<A CLASS="linklist" HREF="DML/Column Properties (information_schema.columns, sys.databases).sql" TARGET="body">Column Properties</A></BR>
+					<A CLASS="linklist" HREF="DML/Find Tables and View that are used by a Stored Procedure (sys.sysdepends, sys.sysobjects, sys.all_sql_modules, sp_depends).sql" TARGET="body">Find Tables and View that are used by a Stored Procedure</A></BR>
+					<A CLASS="linklist" HREF="DML/Table and View List (sys.databases, sys.schemas, sys.tables, sys.views).sql" TARGET="body">Table and View List</A></BR>
+					<A CLASS="linklist" HREF="DML/Table Row Count and Size (sys.allocation_units, sys.indexes, sys.partitions, sys.schemas, sys.tables).sql" TARGET="body">&#9733 Table Row Count and Size</A></BR>
+					<A CLASS="linklist" HREF="DML/Trigger List (sys.triggers, sys.tables).sql" TARGET="body">Trigger List</A></BR>
+
+				</TD>
+
+				<TD CLASS="linklist">	
+					
+					<P><B>Extended Events</B></P>
+		
+					<A CLASS="linklist" HREF="DML/Extended Events - Deadlock (sys.fn_xe_file_target_read_file).sql" TARGET="body">Extended Events - Deadlock</A></BR>
+					<A CLASS="linklist" HREF="DML/Extended Events - LongRunningQueries (sys.dm_xe_session_targets, sys.dm_xe_sessions).sql" TARGET="body">Extended Events - LongRunningQueries</A></BR>
+					<A CLASS="linklist" HREF="DML/Extended Events - Query Timeout (sys.dm_xe_session_targets, sys.dm_xe_sessions).sql" TARGET="body">Extended Events - Query Timeout</A></BR>
+						
+					<P><B>Index</B></P>
+		
+					<A CLASS="linklist" HREF="DML/Index List (sys.databases, sys.indexes, sys.objects).sql" TARGET="body">Index List</A></BR>
+					<A CLASS="linklist" HREF="DML/Index Used Pages and Size (sys.allocation_units, sys.indexes, sys.partitions, sys.tables).sql" TARGET="body">Index Used Pages and Size</A></BR>
+					<A CLASS="linklist" HREF="DML/Unused Indexes (sys.dm_db_index_usage_stats, sys.indexes, sys.objects, sys.tables).sql" TARGET="body">Unused Indexes</A></BR>
+						
+					<P><B>Logins and User Roles and Permissions</B></P>
+					<A CLASS="linklist" HREF="DML/Database Users (sys.databases, sys.database_principals, sys.database_role_members, sys.server_principals).sql" TARGET="body">Database Users</A></BR>
+					<A CLASS="linklist" HREF="DML/Logins (sys.server_principals, sys.sql_logins).sql" TARGET="body">Logins</A></BR>
+					<A CLASS="linklist" HREF="DML/Server Role (sys.server_principals).sql" TARGET="body">Server Role</A></BR>
+					
+					<P><B>Optimization</B></P>
+					<A CLASS="linklist" HREF="DML/Get Cached Plan.sql" TARGET="body">&#9733 Get Cached Plan</A></BR>
+					<A CLASS="linklist" HREF="DML/Open Transactions with Text and Plan.sql" TARGET="body">Open Transactions with Text and Plan</A></BR>
+					<A CLASS="linklist" HREF="DML/Performance - Cursor vs Non Cursor.sql" TARGET="body">Performance - Cursor vs Non Cursor</A></BR>
+					<A CLASS="linklist" HREF="DML/Performance - VARCHAR(MAX) vs VARCHAR.sql" TARGET="body">Performance - VARCHAR(MAX) vs VARCHAR</A></BR>
+					<A CLASS="linklist" HREF="DML/Plan Cache.sql" TARGET="body">Plan Cache</A></BR>
+					<A CLASS="linklist" HREF="DML/Raw Performance Counter Comparator.sql" TARGET="body">Raw Performance Counter Comparator</A></BR>
+					<A CLASS="linklist" HREF="DML/Virtual File Statistics.sql" TARGET="body">Virtual File Statistics</A></BR>
+					<A CLASS="linklist" HREF="DML/Wait Statistics.sql" TARGET="body">Wait Statistics</A></BR>
+					
+					<P><B>Storage</B></P>
+
+					<A CLASS="linklist" HREF="DML/Disk Space Per Backup Drive (xp_cmdshell).sql" TARGET="body">Disk Space Per Backup Drive</A></BR>								
+					<A CLASS="linklist" HREF="DML/Disk Space Per Local Drive (master.sys.dm_os_volume_stats, master.sys.master_files).sql" TARGET="body">Disk space per local drive</A></BR>				
+					
+					<P><B>Troubleshooting</B></P>
+
+					<A CLASS="linklist" HREF="DML/CPU Utilization (sys.dm_os_ring_buffers, sys.dm_os_sys_info).sql" TARGET="body">&#9733 CPU Utilization</A></BR>					
+					<A CLASS="linklist" HREF="DML/Database Files (sys.database_files, sys.databases, sys.filegroups).sql" TARGET="body">&#9733 Database Files</A></BR>
+					<A CLASS="linklist" HREF="DML/Monitor AG Synchronization Status.sql" TARGET="body">&#9733 Monitor AG Synchronization Status</A></BR>
+					
+				</TD>
+
+				<TD CLASS="linklist">	
+				
+					<P><B>Others</B></P>
+
+					<A CLASS="linklist" HREF="DML/Read row from a page" TARGET="body">Read row from a page.sql</A></BR>
+					<A CLASS="linklist" HREF="DML/Kill Long Running SPIDs.sql" TARGET="body">Kill Long Running SPIDs</A></BR>
+					<A CLASS="linklist" HREF="DML/Get SQL Server Installation Date.sql" TARGET="body">Get SQL Server Installation Date</A></BR>
+					<A CLASS="linklist" HREF="DML/Get Job Name using Job ID.sql" TARGET="body">Get Job Name using Job ID</A></BR>
+					<A CLASS="linklist" HREF="DML/SQL Server Last Restart.sql" TARGET="body">SQL Server Last Restart</A></BR>
+					<A CLASS="linklist" HREF="DML/Get Service Account.sql" TARGET="body">Get Service Account</A></BR>
+					<A CLASS="linklist" HREF="DML/Alien.sql" TARGET="body">Alien</A></BR>
+					<A CLASS="linklist" HREF="DML/AOAG Is Primary Replica (sys.fn_hadr_is_primary_replica).sql" TARGET="body">AOAG Is Primary Replica</A></BR>
+					<A CLASS="linklist" HREF="DML/Audit Trace File (fn_trace_gettable, sys.trace_events).sql" TARGET="body">Audit Trace File</A></BR>
+					<A CLASS="linklist" HREF="DML/Auto Growth Events (fn_trace_gettable, sys.trace_events, sys.traces).sql" TARGET="body">Auto Growth Events</A></BR>
+					<A CLASS="linklist" HREF="DML/Begin Try and Begin Catch.sql" TARGET="body">Begin Try and Begin Catch</A></BR>
+					<A CLASS="linklist" HREF="DML/Common E-Mail Format.sql" TARGET="body">Common E-Mail Format</A></BR>					
+					<A CLASS="linklist" HREF="DML/Connect to SQL Server using SQLCMD.txt" TARGET="body">Connect to SQL Server using SQLCMD</A></BR>					
+					<A CLASS="linklist" HREF="DML/Database Tables List (sys.databases, sys.tables, sys.views, sys.schemas).sql" TARGET="body">Database Tables List</A></BR>
+					<A CLASS="linklist" HREF="DML/Difference of @@IDENTITY, SCOPE_IDENTITY, and IDENT_CURRENT().sql" TARGET="body">Difference of @@IDENTITY, SCOPE_IDENTITY, and IDENT_CURRENT()</A></BR>
+					<A CLASS="linklist" HREF="DML/Display Long Result Set in Dynamic SQL.sql" TARGET="body">Display Long Result Set in Dynamic SQL</A></BR>
+					<A CLASS="linklist" HREF="DML/DMV Common Performance Queries (sys.dm_exec_query_stats, sys.dm_exec_sql_text).sql" TARGET="body">DMV Common Performance Queries</A></BR>
+					<A CLASS="linklist" HREF="DML/Dynamic Pivot (CTE).sql" TARGET="body">Dynamic Pivot</A></BR>
+					<A CLASS="linklist" HREF="DML/Failed Jobs.sql" TARGET="body">Failed Jobs</A></BR>
+					<A CLASS="linklist" HREF="DML/Get Procedure Execution Count and Average Elapsed Time.sql" TARGET="body">Get Procedure Execution Count and Average Elapsed Time</A></BR>
+					<A CLASS="linklist" HREF="DML/Get Protocol and Port Number.sql" TARGET="body">Get Protocol and Port Number</A></BR>
+					<A CLASS="linklist" HREF="DML/HTML Format Sample to Email (msdb.dbo.sp_send_dbmail).sql" TARGET="body">HTML Format Sample to Email</A></BR>
+					<A CLASS="linklist" HREF="DML/Linked Server with Dynamic SQL for Open Query (master.sys.servers).sql" TARGET="body">Linked Server with Dynamic SQL for Open Query</A></BR>
+					<A CLASS="linklist" HREF="DML/Outdated Statistics (sys.databases, sys.indexes, sys.objects).sql" TARGET="body">Outdated Statistics</A></BR>
+					<A CLASS="linklist" HREF="DML/Parameter of Objects (sys.databases, sys.objects, sys.parameters).sql" TARGET="body">Parameter of Objects</A></BR>
+					<A CLASS="linklist" HREF="DML/Query Linked Server.sql" TARGET="body">Query Linked Server</A></BR>
+					<A CLASS="linklist" HREF="DML/Search String in SQL (INFORMATION_SCHEMA.COLUMNS, INFORMATION_SCHEMA.TABLES, master.dbo.fn_varbintohexstr).sql" TARGET="body">Search String in SQL</A></BR>
+					<A CLASS="linklist" HREF="DML/Stored Procedure (sys.databases, sys.procedures).sql" TARGET="body">Stored Procedure</A></BR>
+					<A CLASS="linklist" HREF="DML/Transaction Log Investigation (fn_dblog).sql" TARGET="body">Transaction Log Investigation</A></BR>
+					<A CLASS="linklist" HREF="DML/Troubleshoot when a long-running query is blocking other queries (sys.dm_exec_requests, sys.sysprocesses).sql" TARGET="body">Troubleshoot when a long-running query is blocking other queries</A></BR>
+					<A CLASS="linklist" HREF="DML/Unique ID Based On Date Time.sql" TARGET="body">Unique ID Based On Date Time</A></BR>
+					<A CLASS="linklist" HREF="DML/Unit Converter.sql" TARGET="body">Unit Converter</A></BR>
+					<A CLASS="linklist" HREF="DML/View Replication Properties.sql" TARGET="body">View Replication Properties</A></BR>
+				</TD>
+			</TR>
+		</TABLE>
+
+	</BODY>
+</HTML>
