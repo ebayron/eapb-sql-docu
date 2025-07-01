@@ -1,0 +1,234 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle" ID="Overview"><TR><TD>Always On vs Mirroring vs Log Shipping vs Replication</TD></TABLE>
+		
+		<DIV ALIGN="center">
+			
+			<BR/>
+			
+			<TABLE WIDTH=100%>
+			
+				<TR><TD WIDTH=100px CLASS="tabhead"></TD>
+					<TD CLASS="tabhead">Always-On</TD>
+					<TD CLASS="tabhead">Mirroring</TD>
+					<TD CLASS="tabhead">Log Shipping</TD>
+					<TD CLASS="tabhead">Replication</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Components/Server</TD>
+					<TD CLASS="tabdata">Primary node<BR />Secondary node(s)<BR /><BR /></TD>
+					<TD CLASS="tabdata">Principal server<BR />Mirror server<BR />Witness server (optional).<BR /><BR /></TD>
+					<TD CLASS="tabdata">Primary server<BR />Secondary server<BR />Monitor server (optional).<BR /><BR /></TD>
+					<TD CLASS="tabdata">Publisher<BR />Subscriber<BR />Distributor (optional).<BR /><BR /></TD>
+				</TR>
+					
+				<TR><TD CLASS="tabdata">Replicated servers</TD>
+					<TD CLASS="tabdata">One set of primary databases and one to eight sets of corresponding secondary databases.</TD>
+					<TD CLASS="tabdata">One primary and one mirrored server.</TD>
+					<TD CLASS="tabdata">
+						One primary server and multiple secondary servers.<BR /><BR />
+						A secondary server can contain multiple Primary databases that are log shipped from multiple servers.
+					</TD>
+					<TD CLASS="tabdata">
+						Central publisher/distributor, multiple subscribers.<BR /><BR />
+						Central Distributor, multiple publishers, multiple subscribers.<BR /><BR />
+						Central Distributer, multiple publishers, single subscriber.<BR /><BR />
+						Mixed Topology.<BR /><BR />
+					</TD>
+				</TR>
+					
+				<TR><TD CLASS="tabdata">Recovery Model<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>Full<BR /><BR /></TD>
+					<TD CLASS="tabdata">Bulk Logged and Full<BR /><BR /></TD>
+					<TD CLASS="tabdata">Any<BR /><BR /></TD>
+				</TR>
+					
+				<TR><TD CLASS="tabdata">Restoring State<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>NORECOVERY<BR /><BR /></TD>
+					<TD CLASS="tabdata">NORECOVERY or STANDBY<BR /><BR /></TD>
+					<TD CLASS="tabdata">RECOVERY<BR /><BR /></TD>
+				</TR>
+					
+				<TR><TD CLASS="tabdata">Access of secondary databases.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Read-only/Read-Intent/No<BR /><BR /></TD>
+					<TD CLASS="tabdata">Can only be accessed using snapshot DB.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Can be used for reporting purposes only when the secondary database restore in STANDBY mode.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Reads and Writes (depending on the configuration)<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Synchronization/Replication</TD>
+					<TD CLASS="tabdata">Primary replica sends transaction log to secondary databases for all databases defined in the availability group.</TD>
+					<TD CLASS="tabdata">Individual transaction log records from Principal server are transferred using TCP endpoints to Mirrored server.<BR /><BR />Almost everything inside the database is replicated to the mirror database.<BR /><BR />Schema changes can be replicated easily.</TD>
+					<TD CLASS="tabdata">Transaction logs are backed up and transferred using TCP endpoints.<BR /><BR />It automatically sends transaction log backups from one database (Known as the primary database) to a database (Known as the Secondary database) on another server.<BR /><BR />An optional third server, known as the monitor server, records the history and status of backup and restore operations.<BR /><BR />The monitor server can raise alerts if these operations fail to occur as scheduled.</TD>
+					<TD CLASS="tabdata">Tracking/detecting changes (either by triggers or by scanning the log) and shipping the changes.<BR /><BR />Changes can be merged or bi-directional, so data can flow from Publisher to Subscriber and vice-versa.<BR /><BR />Cannot have a complete copy of the database.<BR /><BR />There is an option to replicate selected set of tables/stored procedures/functions inside the database.<BR /><BR />Schema changes can give some hiccups.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">RDBMS Type<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=3>All servers should be SQL Server.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Publisher can be Oracle.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">SQL Server Agent Types/Jobs<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>Independent on SQL Server agent.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Involves four jobs, which are handled by dedicated SQL Server Agent jobs.<BR /><BR />These jobs include the backup job, copy job, restore job, and alert job.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Snapshot agent<BR /><BR />Log Reader agent & Distribution agent (transactional replication)<BR /><BR />Merge agent (merge replication).<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Optional server</TD>
+					<TD CLASS="tabdata">N/A<BR /><BR /></TD>
+					<TD CLASS="tabdata">Witness Server (Principal server can’t act as both principal server and witness server)<BR /><BR /></TD>
+					<TD CLASS="tabdata">Monitor Server (The monitor server should be on a server separate from the primary or secondary servers to avoid losing critical information and disrupting monitoring if the primary or secondary server is lost. If a monitor server is not used, alert jobs are created locally on the primary server instance and each secondary server instance)<BR /><BR /></TD>
+					<TD CLASS="tabdata">Distributor (Can also be on the Publisher)<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">DDL/DML Operations<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=3>DDL changes are applied automatically.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Only DML changes to the tables you have published will be replicated.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Database Limit<BR /><BR /></TD>
+					<TD CLASS="tabdata">32,767<BR /><BR /></TD>
+					<TD CLASS="tabdata">Generally good to have 10 databases for a server.<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>32,767<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Latency<BR /><BR /></TD>
+					<TD CLASS="tabdata">Synchronous and Asynchronous<BR /><BR /></TD>
+					<TD CLASS="tabdata">There will not be data transfer latency on High Safety mode.<BR /><BR /></TD>
+					<TD CLASS="tabdata">There will be data transfer latency. &gt1min.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Potentially as low as a few seconds.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">New Created Database and Stored Procedure<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2></TD>
+					<TD CLASS="tabdata">Monitoring and history information is stored in tables in msdb, which can be accessed using log shipping stored procedures.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Creates new SPs ( 3 SPs of one table). Distribution Database. Rowguid column will be created.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Individual Articles<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=3>Whole database must be selected.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Including tables, views, stored procedures, and other objects. Also filter can be used to restrict the columns and rows of the data sent to subscribers.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">FILESTREAM<BR /><BR /></TD>
+					<TD CLASS="tabdata">Supported<BR /><BR /></TD>
+					<TD CLASS="tabdata">Not Supported<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>Supported<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Database Name<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>Must be the same name.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Can be another name.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Must be the same name.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Mode or Types</TD>
+					<TD CLASS="tabdata">Synchronous and Asynchronous</TD>
+					<TD CLASS="tabdata">
+						High-safety mode supports synchronous operation<BR /><BR />
+						High-performance mode, runs asynchronously<BR /><BR />
+						High-safety mode with automatic failover<BR /><BR />
+					</TD>
+					<TD CLASS="tabdata">
+						Standby mode (read-only) - able to disconnect users when restoring backups.<BR /><BR />
+						No recovery mode (restoring state) - unable to access the secondary database.<BR /><BR />
+					</TD>
+					<TD CLASS="tabdata">
+						Snapshot replication<BR /><BR />
+						Transactional replication<BR /><BR />
+						Transactional publication with updatable subscriptions<BR /><BR />
+						Merge publication<BR /><BR />
+						Pull/Push subscription<BR /><BR />
+					</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Database Availability<BR /><BR /></TD>
+					<TD CLASS="tabdata">Read-only, ready for failover.<BR /><BR /></TD>
+					<TD CLASS="tabdata">In Recovery state, no user can make any operation. You can take snapshot.<BR /><BR /></TD>
+					<TD CLASS="tabdata">In case of standby mode: read only database. In case of restoring with no recovery: Restoring state.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Snapshot (read-only). Other types (Database are available).<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Commited/Uncommited Transactions</TD>
+					<TD CLASS="tabdata" COLSPAN=2>Only committed transactions are transferred.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Both committed and uncommitted transactions are transferred to the secondary database.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Only committed transactions are transferred.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Primary Key</TD>
+					<TD CLASS="tabdata" COLSPAN=3>Not required.<BR /><BR /></TD>
+					<TD CLASS="tabdata">All replicated table should have Primary Key (Transaction Replication).<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">System Data Transferred<BR /><BR /></TD>
+					<TD CLASS="tabdata"><BR /><BR /></TD>
+					<TD CLASS="tabdata">Yes<BR /><BR /></TD>
+					<TD CLASS="tabdata">Mostly<BR /><BR /></TD>
+					<TD CLASS="tabdata">No<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Includes System Databases<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=4>No<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Back Up / Restore</TD>
+					<TD CLASS="tabdata">User make backup and restore manually<BR /><BR />Create back up and restore via wizard<BR /><BR />Automatic seeding<BR /><BR /></TD>
+					<TD CLASS="tabdata">User make backup and restore manually.</TD>
+					<TD CLASS="tabdata">Can be done manually or through Log Shipping options.</TD>
+					<TD CLASS="tabdata">User create an empty database with the same name.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Warm/Hot Standby Solution</TD>
+					<TD CLASS="tabdata">Automatic and Manual failover (with and without data loss).</TD>
+					<TD CLASS="tabdata">When a database mirroring session is synchronized, database mirroring provides a hot standby server that supports rapid failover without a loss of data from committed transactions. When the session is not synchronized, the mirror server is typically available as a warm standby server (with possible data loss).<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>It provides a warm standby solution that has multiple copies of a database and require a manual failover.</TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Failover<BR /><BR /></TD>
+					<TD CLASS="tabdata">Automatic and Manual failover (with and without data loss).<BR /><BR /></TD>
+					<TD CLASS="tabdata">Manual or Automatic<BR /><BR /></TD>
+					<TD CLASS="tabdata" COLSPAN=2>Manual<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Failure</TD>
+					<TD CLASS="tabdata">Cannot protect against storage failure.<BR /><BR />No code change needed if AG Listener was used.</TD>
+					<TD CLASS="tabdata">In case of failure of Principal database, the Mirror database will take over the control and act as Principal and applications can be redirected automatically to connect to this new Principal server with very little downtime.<BR /><BR />No code change required in the application.</TD>
+					<TD CLASS="tabdata">Warm standby, not hot standby.</TD>
+					<TD CLASS="tabdata">In case of failure on Publisher, applications need to be re-directed to the Subscriber manually.<BR /><BR />It requires code change in the application or the connection string.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata">Using With Other Features or Components<BR /><BR /></TD>
+					<TD CLASS="tabdata"></TD>
+					<TD CLASS="tabdata">Can be used with Log shipping, Database Snapshots, Replication.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Can be used with Mirroring, Replication.<BR /><BR /></TD>
+					<TD CLASS="tabdata">Can be used with Log shipping, Mirroring.<BR /><BR /></TD>
+				</TR>
+				
+				<TR><TD CLASS="tabdata" ROWSPAN=2>License (FCI vs AG)</TD>
+					<TD CLASS="tabdata" COLSPAN=4>The general rule of thumb is that:<BR />
+						<P>- You need SA.</P>
+						<P>- You cannot use the secondary for anything. No reads, no DBCC, nothing. If you do, this needs its own license.</P>
+						<P>
+							For each server licensed with SQL Server 2017 and covered by active SA, customers can run up to the same number of passive failover instances in a separate, OSE to support failover events.
+							A passive SQL Server instance is one that is not serving SQL Server data to clients or running active SQL Server workloads
+						</P>
+					</TD>
+					<TR>
+						<TD CLASS="tabdata" COLSPAN=4>
+							<P>- <U>AG synchronous secondary replica, co-located with the primary, is for HA scenarios.</U> - Provided that secondary replica does not allow read-only connections, an SA licensed primary will include the licenses for the secondary.</P>
+							<P>- <U>AG asynchronous secondary replica, in a different datacenter, is for DR scenarios.</U> - Looks like SA covers the secondary, per the image on the bottom of page 28 (with a licensed Primary in Boston and a passive FCI failover target in LA that needs no additional license). The key to that appears to be that either both nodes are in the cloud, or none of them. If you split the cluster between a 1st-party DC and the cloud, you may need to license each node regardless of SA.</P>
+							<P>- <U>FCI is for HA scenarios.</U> - Each SA licensed server allows one FCI failover target, provided that target is fully passive until failover, and only if that failover moves all processing from the initial server.</P>
+						</TD>
+					</TR>
+				</TR>
+				
+			</TABLE>
+			
+		</DIV>
+	</BODY>
+</HTML>

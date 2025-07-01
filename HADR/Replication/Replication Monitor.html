@@ -1,0 +1,368 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+	
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Replication Monitor</TD></TR></TABLE>
+
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+		
+				<UL>
+					<LI>A tool that lets you see the health of the components in a replication setup in one convenient place.</LI>
+					<LI>It can provide information on latency, replication history, warnings, and alerts.</LI>
+					<LI>It is not part of SSMS; it is a separate executable named SqlMonitor.exe.</LI>
+					<LI>When it opens, you'll see that the main screen is divided into two windows.</LI>
+					
+						<UL>
+							<LI>Left window provides a hierarchical view of the publications associated with each Publisher currently being monitored.</LI>
+							<LI>Right-hand window shows details about the item selected in the left-hand window.</LI>
+						</UL>
+
+					<LI>
+						Click the My Publishers node or the Replication Monitor node in the left-hand window.
+						The right-hand pane will display links to additional information about monitoring replication.
+						You'll also find a link for adding a Publisher to Replication Monitor.</LI>
+				</UL>
+					
+			<H2 ID="ViewingInformationAboutPublisher">Viewing Information About Publisher</H2>
+
+				<P>
+					When you select a Publisher in the list on the left, the right-hand window displays details about that Publisher.
+					The information is displayed in what I refer to as the Publisher module, which is separated into three tabs: Publications, Subscription Watch List, and Agents.
+				</P>
+	 
+					<BR /><IMG SRC="IMG/061.PNG" WIDTH=90% /><BR />
+
+				<H3>Publications</H3>
+				
+					<P>
+						Displays information about all publications defined on the selected Publisher.
+						Note the following columns:</P>
+
+						<TABLE WIDTH=100%>	
+							<TR><TD CLASS="tabdata"><B>Synchronizing</B></TD><TD CLASS="tabdata">Number of subscriptions that are currently actively synchronizing. Value is only meaningful for Merge and Snapshot replication.</TD></TR>
+							<TR><TD CLASS="tabdata"><B>Current Average Performance and</BR>Current Worst Performance</B></TD><TD CLASS="tabdata">Information about the current performance of all subscriptions combined.</TD></TR>
+						</TABLE>
+
+					<P>The performance measurement for the last two columns is based on the performance of all subscribers.</P>
+						
+						<UL>
+							<LI>Performance for Transactional Subscriptions is measured only if the performance thresholds have been enabled in the Warnings tab.</LI>
+							<LI>Performance for Merge Publication is displayed only after at least five synchronizations.</LI>
+						</UL>
+
+				<H3>Subscriptions Watch List</H3>
+
+					<UL>
+						<LI>The tab displays a list of subscriptions associated with the selected Publisher, based on subscription type.</LI>
+						<LI>Select the subscription type from the drop-down list near the top-left corner of the Subscription Watch List tab to view information about Transactional, Merge, or Snapshot subscriptions.</LI>
+						<LI>The list of columns is different for each type.</LI>
+						<LI>The drop-down list near the top-right corner of the tab allows you to filter your list of subscriptions based on problem areas.</LI>
+					</UL>
+				
+						<BR /><IMG SRC="IMG/062.PNG" WIDTH=90% /><BR />
+						<BR /><IMG SRC="IMG/063.PNG" WIDTH=90% /><BR />
+						<BR /><IMG SRC="IMG/064.PNG" WIDTH=90% /><BR />
+
+				<H3>Agents</H3>
+					
+					<UL>
+						<LI>Displays information about the replication agents.</LI>
+				
+						<BR /><IMG SRC="IMG/065.PNG" WIDTH=90% /><BR />
+						<BR /><IMG SRC="IMG/066.PNG" WIDTH=90% /><BR />
+						<BR /><IMG SRC="IMG/067.PNG" WIDTH=90% /><BR />
+
+						<LI>
+							In the Agent Type drop-down list, you can select which types of agents you want to display.
+							The available types include the following:</LI>
+
+							<UL>
+								<LI>Snapshot Agent</LI>
+								<LI>Log Reader Agent</LI>
+								<LI>Queue Reader Agent</LI>
+								<LI>Maintenance Jobs (this list is not an agent. Instead, it covers all the additional maintenance jobs that are created by replication)</LI>
+							</UL>
+
+						<LI>
+							After you make a selection, the window will show all agents (or jobs) of the selected type across all publications on this Publisher.
+							The information displayed for each is dependent on its type.
+							However, for each of them there is a lot of information available.
+							<MARK>Especially for the Log Reader agents, there is more information displayed here than anywhere else in Replication Monitor, so this should be the first place to check if you think you are having a problem with it.</MARK></LI>
+						<LI>
+							For all agent types, you will find at least information about the current status, the last start time, the duration, and the last action performed.
+							In addition, for all selections of the Agent types drop-down list, with the exception of Maintenance Jobs, the tab also displays performance information for the most recent run, as well as counts for transactions and commands processed during the most recent run.
+							The Agent Type drop-down list contains neither the Distribution Agent nor the Merge Agent.
+							Those are subscription-specific agents and are therefore not included in the Publication's Agents tab.</LI>
+					</UL>
+
+			<H2 ID="ViewingInformationAboutSnapshotPublications">Viewing Information About Snapshot Publications</H2>
+				
+					<BR /><IMG SRC="IMG/068.PNG" WIDTH=80% /><BR /> 
+					<BR /><IMG SRC="IMG/069.PNG" WIDTH=80% /><BR /> 
+					<BR /><IMG SRC="IMG/070.PNG" WIDTH=80% /><BR /> 
+	 
+				<P>
+					The information shown in the three tabs for snapshot publications is similar to the information available for Merge Publications.
+					However, because of the simpler architecture of Snapshot Replication, the amount of information available is significantly reduced.
+					For example, the publication module includes no performance information on the All Subscriptions tab, and the only warning available on the Warnings tab is the expiration warning.
+				</P>
+
+			<H2 ID="ViewingInformationAboutTransactionalPublications">Viewing Information About Transactional Publications</H2>
+
+				<UL>
+					<LI><B>All Subscriptions</B> - It shows a list of all subscriptions associated with the selected publication.</LI>
+								
+						<BR /><IMG SRC="IMG/071.PNG" WIDTH=80% /><BR />
+
+						<P>
+							The Status column indicates the health of the Distribution Agent for this subscription.
+							The column supports the following values: Running, Error, Retrying failed command, and Not Running.
+							There are also three possible warnings that can be included in addition to the status:
+						</P>
+
+							<OL>
+								<LI>Performance critical</LI>
+								<LI>Expiring soon / Expired</LI>
+								<LI>Uninitialized subscription</LI>
+							</OL>
+
+						<P>
+							For example, you might see a status of Running, Performance critical.
+							The Performance column provides a rough overview of the speed of the Subscriber.
+							You can find the same values here that are used for the Publisher performance.
+							The Latency column specifies the time that it takes for a change to replicate from the Publisher to this Subscriber.
+						</P>
+						
+					<LI><B>Tracer Tokens</B> - Displays latency measurements from the Publisher to the Distributor, the Distributor to the Subscriber, and the total latency.</LI>
+					
+						<BR /><IMG SRC="IMG/072.PNG" WIDTH=80% /><BR />
+
+						<UL>
+							<LI>A special mark that gets inserted into the log file of the publication database.</LI>
+							<LI>Does not change the data in the replicated tables on the Publisher or any Subscriber. However, to the replication agents, this mark looks like a normal transaction. That means it moves through all the standard replication steps, allowing SQL Server to measure the latency between Publisher and Distributor as well as between the Distributor and each Subscriber.</LI>
+							<LI>You can insert a new tracer token into the log by pressing the Insert Tracer button on the Tracer Tokens tab.</LI>
+							<LI>The Tracer Tokens grid displays a single row per Subscriber.</LI>
+							<LI>You can retrieve previous latency measurements by selecting the date and time from the Time inserted drop-down list.</LI>
+							<LI>The date and time in this list represent when the token was inserted into the log.</LI>
+							<LI>
+								<MARK>If you are unsure whether data is moving, just create a tracer token and in a few seconds you will know.
+								If you regularly use tracer tokens, you can even detect trends such as increasing latency.
+								That can help you identify problems before they become too painful.</MARK>
+							</LI>
+						</UL></BR>
+
+					<LI><B>Agents</B> - It displays information about the SQL Server Agent jobs that run the Snapshot Agent and the Log Reader Agent.</LI>
+
+						<BR /><IMG SRC="IMG/073.PNG" WIDTH=80% /><BR />
+
+						<P>
+							The information includes the job status, the last start time, and the duration of the last execution.
+							The Agents tab also displays information about the last action that was taken by each agent.
+							Information about the Distribution Agents is not included in this tab.
+						</P>
+
+					<LI><B>Warnings</B> - It lets you enable warnings and configure their thresholds.</LI>
+
+						<BR /><IMG SRC="IMG/074.PNG" WIDTH=80% /><BR />
+
+						<P>For Transactional Replication, you can specify the thresholds for two warnings.</P>
+
+							<OL>
+								<LI>Expiration warning - If more than the specified percentage of the maximum retention time has passed for a Subscriber, this warning will be displayed for that Subscriber.</LI>
+								<LI>Latency warning - You'll receive a warning when the latency exceeds the specified time limit (in seconds, minutes, or hours).</LI>
+							</OL>
+
+							<P>
+								You can disable either warning by deselecting the Enabled check box associated with the specific warning.
+								The actual warnings are displayed in the Status column on the All Subscriptions tab.
+								A yellow triangle is also tagged onto each level of the Publisher hierarchy in the left-hand window.
+							</P>			
+							
+							<BR /><IMG SRC="IMG/075.PNG" WIDTH=60% /><BR />				
+				</UL>
+				
+			<H2 ID="ViewingInformationAboutMergePublications">Viewing Information about Merge Publications</H2>
+
+				<P>The publication module displayed for Merge Publications does not include Tracer Tokens tab because Merge Replication doesn't use the Transaction Log.</P>
+
+				<UL>
+					<LI><B>All Subscriptions</B> - Shows a list of subscriptions associated with the selected publication. For each subscription, you can see information about its status and performance.</LI>			
+				
+						<BR /><IMG SRC="IMG/076.PNG" WIDTH=80% /><BR />
+						
+						<P>
+							It contains a row for each subscription associated with the selected Merge Publication.
+							For each row, you can see the current status, connection type, time and duration of the last synchronization, performance-related information, and the delivery rate.
+							The Status column can contain any of the following values: Error, Retrying failed command, Not synchronizing, and Synchronizing.
+							There are also four possible warnings that can be included in addition to the status:</P>
+
+							<OL>
+								<LI>Performance critical</LI>
+								<LI>Long-running merge</LI>
+								<LI>Expiring soon / Expired</LI>
+								<LI>Uninitialized subscription</LI>
+							</OL>
+
+						<P>
+							For example, you might see a status of Synchronizing, Performance critical.
+							The Performance column can contain any of the following four values: Excellent, Good, Fair, Poor.</P>
+
+					<LI><B>Agents</B></LI>
+				
+						<BR /><IMG SRC="IMG/077.PNG" WIDTH=80% /><BR />
+
+					<LI><B>Warnings</B> - It lets you configure warning thresholds. The Warnings tab includes five warnings that you can enable and configure for Merge Replication.</LI>			
+				
+						<BR /><IMG SRC="IMG/078.PNG" WIDTH=80% /><BR />
+
+						<UL>
+							<LI>The first warning is displayed when a subscription is about to expire.</LI>
+							<LI>
+								The second and third warnings are displayed when a length of a single synchronization exceeds this threshold.
+								The first of these is specific to dialup connections, and the second is specific to LAN connections; only one of the two is active for any given synchronization, based on the current connection type.</LI>
+							<LI>
+								The last two warnings are displayed when the rate of rows merged per second drops below the threshold set here.
+								In this case, the first of these is specific to LAN connections, and the second to dialup connections.</LI>
+						</UL>
+				</UL>
+
+			<H2 ID="SubscriptionDetails">Subscription Details</H2>
+
+				<P>Everywhere you have a subscription list, you can access more options available to each subscription by right-clicking the subscription (or double-click); this opens a context menu.</P>
+
+					<BR /><IMG SRC="IMG/079.PNG" WIDTH=80% /><BR />
+
+				<P>
+					In this case, the subscription is a Transactional Subscription associated with a publication.
+					From the context menu, you can start or stop the synchronization process, reinitialize the subscription, or access the subscription's properties or agent profile.
+					In addition, you can click the View Details option to open the Subscription dialog box.
+					The Subscription dialog box for a transactional subscription includes three tabs:
+				</P>
+
+					<OL>
+						<LI>Publisher To Distributor History</LI>
+						<LI>Distributor To Subscriber History</LI>
+						<LI>Undistributed Commands</LI>
+					</OL>
+					
+					<BR /><IMG SRC="IMG/080.PNG" WIDTH=80% /><BR />
+					<BR /><IMG SRC="IMG/081.PNG" WIDTH=80% /><BR />
+
+				<UL>
+					<LI>The first two tabs contain information about the last synchronizations.</LI>
+					<LI>
+						The third tab contains information about the number of undistributed commands as well as an estimate for the remaining runtime needed to distribute those commands.
+						The time displayed here is only an estimate.</LI>
+				</UL>
+				
+					<BR /><IMG SRC="IMG/082.PNG" WIDTH=80% /><BR />
+				
+				<P>
+					For a Merge Subscription, the Subscription dialog box contains only a single tab, Synchronization History, which displays information about the last synchronizations.
+					For each Merge Synchronization, you can display detailed statistical information in the bottom half of the dialog box by selecting that synchronization in the list.
+					If you have a lot of synchronizations, the drop-down list at the top of the window can help narrow down the list of synchronizations.
+					The default is to show the last 100 synchronizations.
+					For a Snapshot Subscription, the Subscription dialog box also contains only a single tab, the "Distributor To Subscriber" History tab.
+				</P>
+				
+					<BR /><IMG SRC="IMG/083.PNG" WIDTH=80% /><BR />
+
+			<H2 ID="Alerts">Alerts</H2>
+
+				<UL>
+					<LI>
+						When you enable a warning on a publication's Warnings tab, a yellow triangle is displayed when one of the Subscribers exceeds the set threshold.
+						By default, no additional action is taken.
+						However, you can also set up a SQL Server alert so that SQL Server notifies you if that threshold has been exceeded.</LI>
+					<LI>
+						Replication supports several predefined alerts that you can utilize.
+						You can set up the alerts directly in SSMS or on the Warnings tab of Replication Monitor, which is a much simpler process.
+						You can see that the Warnings tab includes the Configure Alerts button.
+						When you click that button, the Configure Replication Alerts dialog box appears.</LI>
+					<LI>
+						To configure an alert, select it from the list and then click the Configure button.
+						This launches a standard alert properties dialog box, prefilled with the information needed for the selected alert.
+						You can use this form to specify what SQL Server should do, and who should be notified when the alert fires.</LI>
+				</UL>
+
+					<BR /><IMG SRC="IMG/084.PNG" WIDTH=100% /><BR />
+				
+			<H2 ID="AddingaPublisher">Adding a Publisher</H2>
+
+				<P>
+					If you started Replication Monitor by using the context menu of a Publisher in SSMS, the Publisher is listed automatically.
+					However, you can connect to additional Publishers within Replication Monitor or reconnect previously removed Publishers.
+				</P>
+
+				<OL>
+					<LI>In Replication Monitor's left-hand window, right-click the Replication Monitor node, and then click Add Publisher.</LI>					
+						
+					<LI>When the Add Publisher dialog box appears, click the Add button, and then click Add SQL Server Publisher.</LI>
+	 
+					<LI>
+						When the Connect to Server dialog box appears, provide the necessary connection information.
+						Once you've entered the necessary information, click Connect.
+						If the connection is successful, a message box appears.
+						It lets us know that, in order to monitor a Publisher, it needs to connect, not only to that Publisher, but also to the Distributor.
+					</LI>
+
+						<BR /><IMG SRC="IMG/057.PNG" WIDTH=40% /><BR />
+	 
+					<LI>
+						When you click OK to close the message box, another Connect to Server dialog box appears, with your publication's Distributor preselected.
+						Provide the necessary credentials and click Connect.
+						You will be returned to the Add Publisher dialog box.
+						It should now list your Publisher and Distributor in the Start monitoring the following Publisher(s) section.
+						Next, provide a group under which the Publisher will be listed in Replication Monitor.
+						The bottom half of the Add Publisher dialog box lists all groups that are currently defined.
+						Click New Group to create a one.
+						This launches the New Group dialog box.
+					</LI>
+	 
+						<BR /><IMG SRC="IMG/058.PNG" WIDTH=40% /><BR />
+
+					<LI>
+						Type a name in the text box, and then click OK.
+						This will add the new group to the list of groups and automatically select it.
+						If you have multiple groups listed here, make sure the new one is selected.
+						The last thing you need to set is the refresh interval.
+						It determines how often information about the Publisher is collected from the Publisher as well as the Distributor.
+						The default value of 10 seconds is usually a good choice.
+					</LI>
+	 
+						<BR /><IMG SRC="IMG/059.PNG" WIDTH=40% /><BR />
+
+					<LI>Click OK again to close the Add Publisher dialog box. Replication Monitor's left-hand window should again list the Publisher.</LI>
+
+				</OL>
+
+				<P>Note that you cannot do sub-groups, nor can you create more than one connection to a Publisher at a time.</P>
+
+			<H2 ID="RemovingaPublisher">Removing a Publisher</H2>
+
+				<P>	
+					In the left window of Replication Monitor, you can remove individual Publishers from the list.
+					This does not change any data on the Publisher itself; it just stops showing information about this Publisher in Replication Monitor.
+				</P>
+
+				<OL>
+					<LI>
+						Right-click the Publisher you want to remove, and then click Remove.
+						Click "Yes" when prompted to confirm whether you want to remove the selected Publisher.
+					</LI>
+					
+					<LI>
+						Repeat the same steps for the My Publishers node.
+						This is possible only if there are no more Publishers listed under this node.
+						Note that the node is referred to as a group and is used to organize your Publishers.
+					</LI>
+				</OL>
+		</DIV>
+		
+	</BODY>
+</HTML>	

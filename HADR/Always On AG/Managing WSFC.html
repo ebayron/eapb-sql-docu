@@ -1,0 +1,37 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Managing a WSFC</TD></TR></TABLE>
+
+		<DIV CLASS="main">
+	 
+			<H2 ID="AddingANodeToACluster">Adding a node to a Cluster</H2>
+
+				<OL>
+					<LI>Open Failover Cluster Manager. Right-click on Nodes, and select Add Node.</LI>
+					<LI><B>Select Servers</B> – Select the server to add in the cluster.</LI>
+					<LI><B>Validation Warning</B> – Choose whether to run the <A HREF="Configuring WSFC.html#ValidatingTheNodes">Configuration Validation Test</A> or not. When choosing to run the test it will open a separate wizard for it. After the validation, choose No in this page to continue.</LI>
+					<LI>Finish the wizard.</LI>
+				</OL>
+				
+			<H2 ID="EvictingANodeFromACluster">Evicting a node from a cluster</H2>
+			
+				<OL>
+					<LI>Check first if no resources are running under the node that will be evicted. Then select the node and evict it.</LI>
+						</BR><IMG SRC="IMG/038.png" WIDTH=70% /></BR>
+					<LI><A HREF="Configuring WSFC.html#ValidatingTheNodes">Validate the nodes.</A></LI>
+				</OL>		
+									
+			<H2 ID="CommonIssues">Common Issues</H2>
+			
+				<H3>Cluster validation: "The servers are not all in the same organizational unit"</H3>
+
+					<P><B>Problem:</B> ..among the warnings that the cluster validation wizard points out is this one in the Active Directory section: The servers are not all in the same organizational unit..I don't know is whether this is a problem for the purposes of clustering. Is it perfectly fine to set up the cluster this way, or should I have the client make some AD changes?</P>
+					<P><B>Solution:</B> The implications are that there is the potential for group policy, or other processes that rely on the OU structure in AD, to make non-uniform changes to cluster members. Best practices are to have them in the same OU, and it only takes a moment to correct, so ask your client to move them into the same OU. Also, Microsoft also supports Failover Clusters only when the cluster passes all validation tests.</P>
+		</DIV>
+	</BODY>
+</HTML>	

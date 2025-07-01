@@ -1,0 +1,65 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+	
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Replication Filtering</TD></TR></TABLE>
+
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+
+				<UL>
+					<LI>It is not always appropriate to replicate entire tables from one server to another.</LI>
+					<LI>You can use filtering at the publisher to limit what will be available to the subscribers.</LI>
+					<LI>Subscriptions can also use filters at the subscriber to ensure that only data relevant to that subscriber is received and processed.</LI>
+				</UL>
+
+					<H3>Static row filters</H3>
+					
+						<UL>
+							<LI>They are defined at the publisher and allow you to limit which rows will be made available in a publication by simply using a <CODE>WHERE</CODE> clause.</LI>
+							<LI>Can be used with all types of replication.</LI/>
+						</UL>
+
+					<H3>Column filtering</H3>
+					
+						<UL>
+							<LI>Can be used to remove certain columns from all rows in a publication.</LI>
+							<LI>Create publications that eliminate the unnecessary data from the publication without removing it from the base table.</LI>
+							<LI>Certain types of columns may be excluded from filtering depending on which replication type you are using.</LI>
+						</UL>
+
+					<H3>Parameterized row filters</H3>
+					
+						<UL>
+							<LI>Only with Merge Replication and are similar in concept to static row filters. In execution, though, they are significantly different.</LI>
+							<LI>The purpose is to be able to create multiple data partitions that will be replicated without having to create multiple publications.</LI>
+							<UL>
+								<LI>
+									For example, if you use the same base table and you have two different subscribers that each needs a different subset of that same table, using standard row filters would require you to create two publications, one for Subscriber A and the other for Subscriber B.
+									With parameterized row filters, you can specify that for Subscriber A, you are interested in a set of rows in a field.
+									For Subscriber B, you are interested in providing another set of rows the same field.
+									Each of these data sets exists as part of the same publication.</LI>
+							</UL>
+							<LI>
+								The partitions created by parameterized row filters can also overlap.
+								For example, if a new subscriber wanted all the values in a column, then that is an example of an overlapping partition.
+								You can configure overlapping partitions to allow updates from the subscriber to any column, or only any non-shared column.</LI>
+							<LI>Non-overlapping partitions can be made available to multiple subscribers, preventing the subscriber from updating the changes.</LI>
+							<LI>If a non-overlapping partition is available to only one subscriber, then that subscriber can make changes to all columns in that partition.</LI>
+						</UL>
+
+					<H3>Join filters</H3>
+					
+						<UL>
+							<LI>This is limited to Merge Replication and are commonly used to extend the data in a publication that uses parameterized row filters.</LI>
+							<LI>This operates similar to a JOIN statement to combine the data from one or more tables.</LI>
+							<LI>The data in the related tables is published only if it meets the condition of the JOIN clause.</LI>
+						</UL>
+		</DIV>
+		
+	</BODY>
+</HTML>	

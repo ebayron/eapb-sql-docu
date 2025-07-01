@@ -1,0 +1,70 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+	
+		<DIV CLASS="main">
+			<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Troubleshooting</TD></TABLE>
+			
+			<H2 ID="CausesofFailover">Causes of Failover</H2>
+			
+				<OL>
+					<LI>When having multiple AG database on an AG setup and one of those databases went offline.</LI>
+					<LI>When the Failover Cluster resource went down.</LI>
+				</OL>
+			
+			<H2 ID="CreateFailedforAG">Create Failed for AG</H2>
+			
+				</BR><IMG SRC="IMG/17.png" WIDTH=40% /></BR>
+			
+				<OL>
+					<LI>Either the DNS/IP address already exists on the AD or:</LI>
+					<LI>The object that will create the object in the AD lacks permission.</LI>
+				</OL>
+				
+
+				
+			<H2 ID="UnabletoCreateCluster">Unable to create cluster</H2>
+			
+				<P><B>Sample Error:</B> Create computer object cluster-sql on domain controller \\SVR-AD.eapb.com in organizational unit CN=Computers,DC=eapb,DC=com. A constraint violation occurred.</P>
+				<P><B>Fix:</B> User account used to create cluster must be a member of Domain Admins group.</P>
+			
+			<H2 ID="AvailabilityGroupDDLoperationsarepermittedonlywhenyouareusingthemasterdatabase">Availability Group DDL operations are permitted only when you are using the master database</H2>
+				</BR><IMG SRC="IMG/04.png" WIDTH=40% /></BR>
+				<P>Account used to create the AG / perform manual failover must have a default database of master.</P>
+			
+			<H2 ID="NotSynchronizingDatabase">Not Synchronizing Database</H2>
+			
+				<OL>
+					<LI>Do not reboot.</LI>
+					<LI><B>Check SQL Error Logs for details</B> - There might be logs pertaining to rollbacks. Percentage of progress can be monitored until AG becomes healthy.</LI>
+					<LI><B>Try to resume AG</B> - monitor the progress using this <A HREF="..\..\Script\DML\Monitor AG Synchronization Status.sql" TARGET=”_blank>script</A>.</LI>
+					<LI>Reboot the secondary node which is not synchronizing then monitor the progress.</LI>
+
+<PRE>
+ALTER DATABASE &ltDBName&gt SET HADR RESUME;
+</PRE>
+
+					<LI><B>Check if failover is possible</B> - There is a scenario where even if it shows "not synchronizing", it can be failed over with "No Data Loss". Possible that the primary database was not accessible after the problem occurred (ex: Msg 988, Level 14, Unable to access database because it lacks a quorum of nodes for high availability.). Monitor the progress using this <A HREF="..\..\Script\DML\Monitor AG Synchronization Status.sql" TARGET=”_blank>script</A>.</LI>
+				</OL>
+				
+			<H2>Misaligned IOs</H2>
+			
+				<P><B>Symptom: </B> - SQL Server Error Log shows below logs.</P>
+				
+				<BR /><IMG SRC="IMG/11.PNG" WIDTH=80% /><BR />
+				
+				<P><B>Cause: </B> - fsutil shows misaligned Physical Sector Bytes.</P>
+				
+				<BR /><IMG SRC="IMG/12.PNG" WIDTH=60% /><BR />
+				
+				<P>When disks for primary and secondary are not aligned, then the AG synchronization process can run slow.</P>
+				
+				<P><B>Solution: </B> - All the disks involved (specifically log file disks) in an AG configuration should have same sector size (4096 instead of 512).</P>
+								
+		</DIV>
+
+	</BODY>
+</HTML>	

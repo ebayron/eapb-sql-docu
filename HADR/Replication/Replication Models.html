@@ -1,0 +1,45 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+	
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Replication Models</TD></TR></TABLE>
+
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+
+				<UL>
+					<LI>It defines the physical implementation of how the data will be distributed.</LI>
+					<LI>Any of the replication types can use any of the replication models.</LI>
+					<LI>Another consideration when choosing an appropriate replication model is whether to have the publisher and the distributor on the same instance.</LI>
+					<LI>Geographical distribution and network availability may influence decision to use a local distributor versus a remote one.</LI>
+				</UL>
+
+				<H2 ID="SinglePublisherMultipleSubscribers">Single Publisher/Multiple Subscribers</H2>
+
+					<BR /><IMG SRC="IMG/007.PNG" WIDTH=60% /><BR />
+
+					<P>In cases in which the data should originate from one location only, this can be used to provide access to data for remote locations.</P>
+
+				<H2 ID="Multiple Publishers/Single Subscriber">Multiple Publishers/Single Subscriber</H2>
+
+					<BR /><IMG SRC="IMG/008.PNG" WIDTH=30% /><BR />
+
+					<P>This model can be used when multiple servers will track and update data, but that data will need to be consolidated on a single server.</P>
+
+				<H2 ID="MultiplePublishersMultipleSubscribers">Multiple Publishers/Multiple Subscribers</H2>
+
+					<BR /><IMG SRC="IMG/009.PNG" WIDTH=40% /><BR />
+
+					<UL>
+						<LI>This model works well for environments where data must be shared among peers.</LI>
+						<LI>This can be useful in applications in which the local database stores information about local and remote operations.</LI>
+						<LI>Each publisher can provide updates made locally to all other replication partners that participate in this model and receive the updates, in turn.</LI>
+					</UL>
+		</DIV>
+		
+	</BODY>
+</HTML>	

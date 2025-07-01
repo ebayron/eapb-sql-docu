@@ -1,0 +1,4 @@
+sqlcmd -S .\SQL2014 -U sa -P p@ssw0rd -i D:\script.sql -o D:\output.txt
+
+
+-- Use GO command every end of SQL statement.

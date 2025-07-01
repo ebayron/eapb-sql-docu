@@ -1,0 +1,4 @@
+-- Get Job Name using Job ID
+SELECT *
+FROM msdb.dbo.sysjobs
+WHERE CONVERT(BINARY(16), job_id) = 0xCDC2C91CE46C7242B788524C567B777B

@@ -1,0 +1,150 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+	
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Replication Agents</TD></TR></TABLE>
+
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+		
+				<UL>
+					<LI>In a standard replication setup, SQL Server creates a number of SQL Server Agent jobs to support the replication process.</LI>
+					<LI>By default, SQL Server creates one job per agent in order to run it.</LI>
+					<LI>SQL Server creates several other jobs to perform various maintenance tasks related to replication. Those jobs are mainly tasked with cleanup and problem detection.</LI>
+				</UL>
+
+					<H3>Snapshot Agent Job</H3>
+
+<PRE>
+&ltServer&gt-&ltPublication Database&gt-&ltPublication&gt-&ltnumber&gt
+</PRE>
+
+						<UL>
+							<LI>Category: REPL-Snapshot</LI>
+							<LI>It copies all the schema information and all the data of the published objects into the snapshot folder.</LI>
+							<LI>SQL Server creates a SQL Server Agent job for each publication in order to execute the Snapshot Agent.</LI>
+							<LI>If you need to generate a new snapshot for a publication, you can manually run the Snapshot Agent job associated with that publication, or you can schedule the job to run at a later time.</LI>
+						</UL>
+
+					<H3>Log Reader Agent Job</H3>
+
+<PRE>
+&ltPublisher&gt-&ltPublication Database&gt-&ltnumber&gt
+</PRE>
+
+						<UL>
+							<LI>Responsible to read the log file of the published database and copy all the data necessary to reproduce the object or data changes in the subscription database. It stores that information in the distribution database.</LI>
+							<LI>When you set up the first publication in a publication database, SQL Server creates a single SQL Server Agent job to execute the Log Reader Agent.</LI>
+							<LI>Any subsequent publications set up in that publication database will also use this job.</LI>
+							<LI>By default, the job is scheduled to start when the SQL Server service starts. Given how SQL Server reuses log space, this is the preferred setting.</LI>
+						</UL>
+
+					<H3>Distribution Agent Job</H3>
+
+						<UL>
+							<LI>Category: REPL-Distribution</LI>
+							<LI>SQL Server creates a job for each subscription in order to execute the Distribution Agent.</LI>
+							<LI>The job runs either on the Distributor (Push) or on the Subscriber (Pull).</LI>
+							<LI>Push Subscription</LI>
+
+<PRE>
+&ltPublisher&gt-&ltPublication Database&gt-&ltPublication&gt-&ltSubscriber&gt-&ltnumber&gt
+</PRE>
+
+							<LI>Pull Subscription</LI>
+
+<PRE>
+&ltPublisher&gt-&ltPublication Database&gt-&ltPublication&gt-&ltSubscriber&gt-&ltSubscription Database&gt-&ltGUID&gt
+</PRE>
+
+						</UL>
+
+				<H3>Merge Agent Job</H3>
+
+					<UL>
+						<LI>SQL Server creates a SQL Server Agent job for each subscription to execute the Merge Agent.</LI>
+						<LI>The job runs either on the Distributor (Push) or on the Subscriber (Pull).</LI>
+						<LI>Push Subscription</LI>
+
+<PRE>
+&ltPublisher&gt-&ltPublication Database&gt-&ltPublication&gt-&ltSubscriber&gt-&ltnumber&gt
+</PRE>
+
+						<LI>Pull Subscription</LI>
+
+<PRE>
+&ltPublisher&gt-&ltPublication Database&gt-&ltPublication&gt-&ltSubscriber&gt-&ltSubscription Database&gt-&ltnumber&gt
+</PRE>
+
+					</UL>
+
+				<H2 ID="JobCreation">Job Creation</H2>
+				
+					<BR /><IMG SRC="IMG/010.PNG" WIDTH=60% /><BR />
+
+					<UL>
+						<LI>
+							SQL Server creates the replication-related jobs automatically at various steps during replication setup. 
+							When you configure a SQL Server instance to be a Distributor, replication setup creates several SQL Server Agent jobs.
+							Six SQL Server Agent jobs have been created on the Distributor:</LI></BR>
+
+							<OL>
+								<LI><B>Agent history clean up: &ltdistribution database name&gt </B></LI>
+								
+									<P>
+										From the distribution database, it removes all history records that keep track of the agents' performance.
+										The job uses the history retention setting of the distribution database to determine which records to delete.
+										SQL Server creates one job of this type for each distribution database on the Distributor.
+									</P>
+
+								<LI><B>Distribution clean up: &ltdistribution database name&gt </B></LI>
+									
+									<P>
+										Removes old transaction information from the distribution database.
+										It also checks whether all Subscribers received each record.
+										Based on the result of that check and the replication retention settings, the job then determines which records to delete from the distribution database.
+										In addition, this disables subscriptions that failed to read the transaction information in time.
+										It also regularly refreshes the statistics on the tables in the distribution database.
+										SQL Server creates one job of this type for each distribution database on the Distributor.
+									</P>
+
+								<LI><B>Expired subscription clean up</B></LI>
+								
+									<P>
+										Removes subscriptions that fail to connect to the Subscriber within the publication retention period.
+										This job runs on the Distributor as well as on the Publisher.
+										SQL Server creates one instance of this job on each server.
+									</P>
+
+								<LI><B>Reinitialize subscriptions having data validation failures</B></LI>
+								
+									<P>
+										Identifies subscriptions with data validation errors and sets them up for re-initialization.
+										You can use data validation to verify data consistency between the Publisher and Subscriber.
+									</P>
+									
+								<LI><B>Replication agents Checkup</B></LI>
+								
+									<P>Monitors the replication agents and creates an entry in the Windows Event Log if any replication agent fails to report its status in the distribution database.</P>
+									
+								<LI><B>Replication monitoring refresher for &ltdistribution database name&gt </B></LI>
+								
+									<P>Used by the replication monitor to refresh cached queries.</P>
+							</OL>
+
+						<LI>
+							When configuring a Push Subscription, SQL Server creates a single SQL Server Agent job on the Distributor.
+							The job runs the Distribution Agent.
+							There are no additional jobs on either the Publisher or the Subscriber.
+							In the Push Subscription model all three replication agents live on the Distributor.</LI>
+						<LI>When you configure a Pull Subscription, SQL Server creates only a single SQL Server Agent job to run the Distribution Agent on the Subscriber.</LI>
+						<LI>You can tell which SQL Server Agent job runs which replication agent by referring to the Category column in the Job Activity Monitor.</LI>
+					</UL>
+		</DIV>
+		
+	</BODY>
+</HTML>	

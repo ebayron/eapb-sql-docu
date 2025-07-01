@@ -1,0 +1,148 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle" ID="Overview"><TR><TD>Log Shipping</TD></TABLE>
+
+		<DIV CLASS="main">
+		
+			<BR /><IMG SRC="IMG/01.PNG" WIDTH=40% /><BR />
+			
+			<P>Allows you to automatically send transaction log backups from a primary database on a primary server instance to one or more secondary databases on separate secondary server instances.</P>
+
+				<H3>Requirements:</H3>
+
+					<OL>
+						<LI>Database must reside on the same domain.</LI>
+						<LI>Both server instance must have the same server collation settings.</LI>
+						<LI>SQL server agent should be configured to start up automatically.</LI>
+						<LI>Backup and Restore folders must be created separately with appropriate permissions.</LI>
+							<BR /><IMG SRC="IMG/02.PNG" WIDTH=40% /><BR />						
+						<LI>Database must be in Full or Bulk Recovery model.</LI>
+						<LI>Account must have sysadmin privileges on each computer running SQL server to configure log shipping.</LI>
+					</OL>
+			
+				<H3>Transaction Undo File</H3>
+				
+					<UL>
+						<LI>.TUF is created when performing log shipping to a server in Standby mode.</LI><BR />
+						<LI>When the database is in Standby mode, the database recovery happens when the log is restored; and this mode also creates a file on destination server with .TUF extension.</LI><BR />
+						<LI>This file contains information on all modifications performed at the time backup is taken.</LI><BR />
+						<LI>While restoring, the log backup all uncommitted transactions are recorded to the undo file with only committed transactions written to disk which enables the users to read the database.</LI><BR />
+						<LI>When we restore next transaction log backup, SQL Server will fetch all the uncommitted transactions from undo file and check with the new transaction log backup whether committed or not.</LI><BR />
+						<LI>If found to be committed the transactions will be written to disk - else it will be stored in undo file until it gets committed or rolled back.</LI>
+					</UL>
+			
+			<H2 ID="Configuration">Configuration</H2>
+
+				<OL>
+					<LI>Perform one Full Backup and one Transaction Log Backup on the database.</LI><BR />
+					<LI>Restore the back up files on the secondary server with NO RECOVERY option.</LI>
+					
+						<P>
+							We can set it to either NO RECOVERY or STANDBY.
+							Both options leaves the database in a state where it can continue replaying transaction log files.
+							With NO RECOVERY, it leaves the database not accessible.
+							With STANDBY it leaves the database in read-only. It creates this extra standby file with an extension of bak.
+							In previous versions of SQL Server, this used to be a TUF file.
+							It still serves the same purpose - it contains the information on modifications made as part of any incomplete transactions at the time the backup was made.
+						</P>
+
+					<LI ID="DatabaseProperties">Go to the primary database's properties and go to Transaction Log Shipping section. Check the "Enable this as a primary database in a log shipping configuration" option.</LI><BR />
+
+					<LI>Click the Backup Settings and specify the ff:</LI><BR />
+						<UL>
+							<LI>Backup shared folder.</LI><BR />
+							<LI>Retention period and alert settings.</LI><BR />
+							<LI>Backup Job schedule.</LI><BR />
+							<LI>Compression settings.</LI><BR />
+						</UL>
+
+						<BR /><IMG SRC="IMG/04.PNG" WIDTH=70% /><BR />
+						
+					<LI>Set up the secondary database</LI><BR />
+						<UL>
+							<LI>Initialize Secondary Database</LI><BR />
+								<UL>
+									<LI>Connect to the secondary server.</LI><BR />
+									<LI>Specify the database.</LI><BR />
+									<LI>Since the database was already initialized, choose the last option.</LI><BR />
+								</UL>
+
+								<BR /><IMG SRC="IMG/05.PNG" WIDTH=60% /><BR />
+								
+							<LI>Copy Files</LI><BR />
+								<UL>
+									<LI>Specify the destination for the backup files.</LI><BR />
+									<LI>Specify the retention period and alert settings.</LI><BR />
+									<LI>Specify Restore schedule.</LI><BR />
+								</UL>
+
+								<BR /><IMG SRC="IMG/06.PNG" WIDTH=60% /><BR />
+			
+							<LI>Restore Transaction Log</LI><BR />
+								<UL>
+									<LI>Specify destination state.</LI><BR />
+									<LI>Specify delay and alert settings.</LI><BR />
+									<LI>Specify Backup Job schedule.</LI><BR />
+								</UL>
+
+								<BR /><IMG SRC="IMG/07.PNG" WIDTH=60% /><BR />
+			
+							<LI>Finish the setup.</LI><BR />
+
+								<BR /><IMG SRC="IMG/09.PNG" WIDTH=100% /><BR />
+
+								<P>When configuring a Log Shipping, there are three jobs that will be created.</LI>
+
+									<OL>
+										<LI>A job in the primary server that will back up the transaction logs.</LI>
+										<LI>A job in the secondary server that will copy the transaction log back up files from the primary to the secondary server.</LI>
+										<LI>A job in the secondary server that will restore the transaction log back up files.</LI>
+									</OL>
+
+						</UL>
+				</OL>
+
+			<H2 ID="ReverseLogShipping">Reverse Log Shipping</H2>
+
+				<P>Reverse Log Shipping happens when you want the primary and the secondary database to switch places without having to re-initialize Log Shipping.</P>
+
+				<OL>
+					<LI>Disable the job the backs up the log of the primary database.</LI><BR />
+					<LI>Manually run the job on the secondary database that copies the log files. This is to copy the remaining back up files.</LI><BR />
+					<LI>Manually run the job on the secondary database that restores the log files. This is to restore the remaining back up files.</LI><BR />
+					<LI>Do a last log backup on the primary database.</LI>
+
+<PRE>
+BACKUP LOG testDB
+TO DISK = 'L:\testDB.trn'
+WITH NORECOVERY
+</PRE>
+
+					<LI>After Restore the last log backup on the secondary database. This is in order for the both databases to become synchronized.</LI>
+
+<PRE>
+RESTORE LOG testDB
+FROM DISK = 'L:\testDB.trn'
+WITH RECOVERY
+</PRE>
+					<LI><A HREF="#DatabaseProperties" TARGET="_blank">Configure</A> the Log Shipping as usual.</LI><BR />
+					<LI>Delete the old created jobs.</LI>
+				</OL>
+				
+				</TABLE>
+				
+			<H2 ID="Troubleshooting">Troubleshooting</H2>
+			
+				<UL>
+					<LI><B>Error on backing up transaction log</B> - SqlLogShip.exe needs .NET Framework 3.5 installed.</LI>
+					<LI><B>Error on restoring transaction log (Exclusive access could not be obtained because the database is in use)</B> - No user session should be using the database.</LI>
+				</UL>
+			
+		</DIV>
+	</BODY>
+</HTML>

@@ -1,0 +1,174 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Always On AGs Prerequisite, Permission, Restriction, and Recommendation</TD></TABLE>
+		
+		<DIV CLASS="main">
+			<H2 ID="Prerequisite">Prerequisite</H2>
+
+				<TABLE WIDTH=100% ALIGN="center">
+					<TR><TD CLASS="tabhead" COLSPAN=2>Server</TD></TR>
+					<TR><TD CLASS="tabdata">Must be running on Windows Server 2012 (2016 for the Domain Independent AO AG) or later versions.</TD><TD CLASS="tabdata" WIDTH="30px"></TD></TR>
+					<TR><TD CLASS="tabdata">Must not be a domain controller.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Nodes must be part of the same domain.</TD><TD CLASS="tabdata" WIDTH="30px"></TD></TR>
+					<TR><TD CLASS="tabdata">Install/Enable Failover Cluster Manager feature.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Install/Enable .NET 3.5 Framework (to avoid installation issues in SQL Server).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">All node/replicas should run on comparable systems that can handle identical workloads (CPU, Memory).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">All node/replicas should run on comparable systems that can handle identical workloads (Drive space, Physical sector).</TD><TD CLASS="tabdata"></TD></TR>
+				</TABLE><BR />
+
+				<TABLE WIDTH=100% ALIGN="center">
+					<TR><TD CLASS="tabhead" COLSPAN=2>Network</TD></TR>
+					<TR><TD CLASS="tabdata">Static IP Address for Internal Network for each node.</TD><TD CLASS="tabdata" WIDTH="200px"></TD></TR>
+					<TR><TD CLASS="tabdata">Static IP Address for External Network for each node (optional).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Static IP Address for Cluster.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Static IP Address for AG Listener (for internal network / heartbeat).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Static IP Address for AG Listener (for external network).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Cluster Name.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">AG Listener Name.</TD><TD CLASS="tabdata"></TD></TR>
+				</TABLE><BR />
+
+				<TABLE WIDTH=100% ALIGN="center">
+					<TR><TD CLASS="tabhead" COLSPAN=2>Service Accounts</TD></TR>
+					<TR><TD CLASS="tabdata">Account which is part of Domain Admins group (creates the cluster).</TD><TD CLASS="tabdata" WIDTH="30px"></TD></TR>
+					<TR><TD CLASS="tabdata">Account which will be used by SQL Server service.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Account which will be used by SQL Server Agent service (optional).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Account which will create the AG's default database should be 'master'.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Local user with same username and password on all machines that will participate in the setup (for non-domain type).</TD><TD CLASS="tabdata"></TD></TR>
+				</TABLE><BR />
+
+				<TABLE WIDTH=100% ALIGN="center">
+					<TR><TD CLASS="tabhead" COLSPAN=2>SQL Server Instance</TD></TR>
+					<TR><TD CLASS="tabdata">Stand alone installation on both nodes.</TD><TD CLASS="tabdata" WIDTH="30px"></TD></TR>
+					<TR><TD CLASS="tabdata">At least SQL Server 2012 (2014 for Domain Independent AO AG) version.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Enterprise edition (Standard Edition has its limitations).</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Same server collation.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Enable AG feature on each node via SQL Server Configuration Manager (requires service restart).</TD><TD CLASS="tabdata"></TD></TR>
+				</TABLE><BR />
+
+				<TABLE WIDTH=100% ALIGN="center">
+					<TR><TD CLASS="tabhead" COLSPAN=2>SQL Server Availability Database</TD></TR>
+					<TR><TD CLASS="tabdata">A user database.</TD><TD CLASS="tabdata" WIDTH="30px"></TD></TR>
+					<TR><TD CLASS="tabdata">Resides on the instance of SQL Server where you create the AG and be accessible to the server instance.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">A read-write database.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">A multi-user database.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Not uses AUTO_CLOSE.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Uses the Full Recovery model.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Possesses at least one full database and transaction log backup.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Not belong to any existing AG.</TD><TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Not be configured for database mirroring.</TD><TD CLASS="tabdata"></TD></TR>
+				</TABLE>
+			
+				<H3>Other notes</H3>
+				
+					<OL>
+						<LI>If you destroy and re-create a WSFC, you must disable and re-enable AG feature via SQL Server Configuration Manager on each server instance.</LI>
+						<LI>
+							Each server instance requires a database mirroring endpoint.
+							Note that this endpoint is shared by all the availability replicas and database mirroring partners and witnesses on the server instance.
+							If a server instance that you select to host an availability replica is running under a domain user account and does not yet have a database mirroring endpoint, the New AG Wizard (or Add Replica to AG Wizard) can create the endpoint and grant CONNECT permission to the server instance service account.
+							However, if the SQL Server service is running as a built-in account, such as Local System, Local Service, or Network Service, or a non-domain account, you must use certificates for endpoint authentication, and the wizard will be unable to create a database mirroring endpoint on the server instance.
+							In this case, we recommend that you create the database mirroring endpoints manually before you launch the wizard.</LI>
+						<LI>Other Notes:</LI>
+							<UL>
+								<LI>If any databases that use FILESTREAM will be added to an AG, ensure that FILESTREAM is enabled on every server instance that will host an availability replica for the AG.</LI>
+								<LI>If any contained databases will be added to an AG, ensure that the contained database authentication server option is set to 1 on every server instance that will host an availability replica for the AG.</LI>
+								<LI>If you use TDE, the certificate or asymmetric key for creating and decrypting other keys must be the same on every server instance that hosts an availability replica for the AG.</LI>
+							</UL>
+					</OL>
+
+			<H2 ID="Permission">Permission</H2>
+		
+				<H3>Server</H3>
+				
+					<TABLE WIDTH=100%>
+						<TR>
+							<TD CLASS="tabdata"><B>WSFC</B></TD>
+							<TD CLASS="tabdata">
+								<UL>
+									<LI>To administer a WSFC, the user must be a system administrator on every cluster node.</LI>
+									<LI>AGs need full control, and enabling AGs on an instance of SQL Server gives it full control of the cluster (through Service SID). You cannot directly add or remove security for a server instance in Cluster Manager. To manage cluster security sessions, use the SQL Server Configuration Manager or the WMI equivalent from SQL Server.</LI>
+								</UL>
+							</TD>
+						</TR>
+						<TR>
+							<TD CLASS="tabdata"><B>Enabling AGs</B></TD>
+							<TD CLASS="tabdata">Requires membership in the Administrator group on the local computer and full control on the WSFC.</TD></TR>
+					</TABLE>
+		
+				<H3>SQL Server Instance</H3>
+				
+					<TABLE WIDTH=100%>
+						<TR>
+							<TD CLASS="tabdata"><B>Creating the database mirroring endpoint</B></TD>
+							<TD CLASS="tabdata">Requires CREATE ENDPOINT permission, or membership in the sysadmin fixed server role. Also requires CONTROL ON ENDPOINT permission.</TD></TR>
+						<TR>
+							<TD CLASS="tabdata"><B>SQL Server access to the server internals</B></TD>
+							<TD CLASS="tabdata">Each instance of SQL Server must have permissions to access the registry, cluster, and so forth.</TD></TR>
+						<TR>
+							<TD CLASS="tabdata"><B>Creating an AG</B></TD>
+							<TD CLASS="tabdata">Requires membership in the sysadmin fixed server role and either CREATE AG server permission, ALTER ANY AG permission, or CONTROL SERVER permission.</TD></TR>
+						<TR>
+							<TD CLASS="tabdata"><B>Altering/Dropping an AG</B></TD>
+							<TD CLASS="tabdata">Requires ALTER AG permission on the AG, CONTROL AG permission, ALTER ANY AG permission, or CONTROL SERVER permission.<BR /><BR />In addition, joining a database to an AG requires membership in the db_owner fixed database role while dropping an AG that is not hosted on the local replica location needs CONTROL SERVER permission or CONTROL permission on that AG.</TD></TR>
+					</TABLE>
+
+			<H2 ID="Restriction">Restriction</H2>
+			
+				<H3>AG</H3>
+				
+					<UL>
+						<LI>AG name must be unique on the WSFC.</LI>
+						<LI>There is no enforced limit on the maximum number of AGs and availability databases per computer.</LI>
+						<LI>Do not use the Failover Cluster Manager to manipulate AGs. If the state of the cluster is changed outside of SQL Server it is possible for the state to get out of sync between WSFC and SQL Server, which may lead to unpredictable behavior.</LI>
+						<LI>If the full file path of a secondary database differs from the path of the corresponding primary database:
+							<UL>
+								<LI>New AG Wizard/Add Database to AG Wizard - The Full option is not supported.</LI>
+								<LI>RESTORE WITH MOVE - To create the secondary databases, the database files must be RESTORED WITH MOVE on each instance of SQL Server that hosts a secondary replica.</LI>
+								<LI>Impact on add-file operations - A later add-file operation on the primary replica might fail on the secondary databases. This failure could cause the secondary databases to be suspended. This, in turn, causes the secondary replicas to enter the NOT SYNCHRONIZING state.</LI>
+							</UL></LI>
+						<LI>Query statistics system data collector cannot reliably run in an environment with non-readable secondaries.</LI>
+						<LI>You cannot drop a database that currently belongs to an AG.</LI>
+					</UL>
+				
+				<H3>FCI Hosting Availability Replica</H3>
+				
+					<TABLE>
+						<TR><TD CLASS="tabdata"><B>The cluster nodes of an FCI can host only one replica for a given AG</B></TD><TD CLASS="tabdata">
+							<UL>
+								<LI>If you add an availability replica on an FCI, the WSFC nodes that are possible FCI owners cannot host another replica for the same AG. To avoid possible conflicts, it is recommended to configure possible owners for the FCI. This will prevent potentially causing a single WSFC from attempting to host two availability replicas for the same AG.</LI>
+								<LI>Using the Failover Cluster Manager to move a FCI hosting an AG to a node that is already hosting a replica of the same AG may result in the loss of the AG replica, preventing it from being brought online on the target node. A single node of a failover cluster cannot host more than one replica for the same AG.</LI>
+							</UL>
+							</TD></TR>
+						<TR><TD CLASS="tabdata"><B>FCIs do not support automatic failover by AGs</B></TD><TD CLASS="tabdata"> FCIs do not support automatic failover by AGs, so any availability replica that is hosted by an FCI can be configured for manual failover only.</TD></TR>
+						<TR><TD CLASS="tabdata"><B>Changing FCI network name</B></TD><TD CLASS="tabdata">If you need to change the network name of an FCI that hosts an availability replica, you will need to remove the replica from its AG and then add the replica back into the AG. You cannot remove the primary replica, so if you are renaming an FCI that is hosting the primary replica, you should fail over to a secondary replica and then remove the former primary replica and add it back. Note that renaming an FCI might alter the URL of its database mirroring endpoint. When you add the replica ensure that you specify the current endpoint URL.</TD></TR>
+					</TABLE>
+
+			<H2 ID="Recommendation">Recommendation</H2>
+
+				<H3>Computers That Host Availability Replicas</H3>
+				
+					<TABLE>
+						<TR><TD CLASS="tabdata"><B>Dedicated network adapters</B></TD><TD CLASS="tabdata">For best performance, use a dedicated network adapter (NIC) for AGs.</TD></TR>
+						<TR><TD CLASS="tabdata"><B>Encryption</B></TD><TD CLASS="tabdata">Use encryption for connections between server instances that host AGs availability replicas.</TD></TR>
+					</TABLE>                   
+				
+				<H3>Network</H3>
+					
+					<UL>
+						<LI>There must be 2 networks for each node - 1 for external and 1 for internal (heartbeat) - each have different subnet masks. FCI or AG can be set up without hearbeat, but it is a bad practice to do so. If the network is congested, the node will not be able to communicate and the cluster will failover.</LI>							
+						<LI>External and internal network must have different subnet masks. If the network is congested, the node will not be able to communicate and the cluster will failover.</LI>							
+						<LI>
+							It is recommended to use the same network links for communications between WSFC nodes and communications between availability replicas.
+							Separate network links can cause unexpected behaviors if some of links fail (even intermittently).
+							For example, for an AG to support automatic failover, the secondary replica that is the automatic-failover partner must be in the SYNCHRONIZED state.
+							If the network link to this secondary replica fails (even intermittently), the replica enters the UNSYNCHRONIZED state and cannot begin to resynchronize until the link is restored.
+							If the WSFC requests an automatic failover while the secondary replica is unsynchronized, automatic failover will not occur.</LI>
+					</UL>
+		</DIV>
+	</BODY>
+</HTML>	

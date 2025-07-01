@@ -1,0 +1,167 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+	
+		<TABLE WIDTH=100% CLASS="maintitle"><TR><TD>Replication Agents</TD></TR></TABLE>
+
+		<DIV CLASS="main">
+		
+			<H2>Overview</H2>
+
+				<UL>
+					<LI>The replication processes are executed by a set of replication agents.</LI>
+					<LI>A set of independent Windows executables responsible for one piece of the process of moving the data, which carry out the processes that make replication work - not the Database Engine.</LI>
+					<LI>These are programs that run certain tasks to control preparation and distribution of the data and are used depending on the type of replication used.</LI>
+					<LI>Replication relies on the SQL Server Agent Service when the server is a publisher or distributor to automate the replication process.</LI>
+					<LI>In a default installation of replication, each agent is executed by its own SQL Server Agent job.</LI>
+					<LI>Most of those agents usually run on the Distributor, although some can run on the Subscriber.</LI>
+					<LI>The Publisher houses replication agents only when the Publisher and Distributor are the same instance.</LI>
+					<LI>Instead of relying on the SQL Server Agent, any replication agent can be executed manually or by some other scheduling means. They can be executed from the command line. However, in most cases, these approaches provide little advantage and often make troubleshooting more complex.</LI>
+					<LI>Some of these are available to all replication types, and some are specific to just one type of replication.</LI>
+				</UL>
+
+				<TABLE>
+				
+					<TR><TD></TD>															<TD CLASS="tabhead">Snapshot</BR>Agent</TD>	<TD CLASS="tabhead">Log Reader</BR>Agent</TD>	<TD CLASS="tabhead">Distribution</BR>Agent</TD>	<TD CLASS="tabhead">Merge</BR>Agent</TD><TD CLASS="tabhead">Queue Reader</BR>Agent</TD></TR>
+					<TR><TD CLASS="tabdata">Snapshot Replication</TD>						<TD CLASS="tabdata">Y</TD>					<TD CLASS="tabdata"></TD>						<TD CLASS="tabdata"></TD>						<TD CLASS="tabdata"></TD>				<TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Transactional Replication</TD>					<TD CLASS="tabdata">Y</TD>					<TD CLASS="tabdata">Y</TD>						<TD CLASS="tabdata">Y</TD>						<TD CLASS="tabdata"></TD>				<TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Merge Replication</TD>							<TD CLASS="tabdata">Y</TD>					<TD CLASS="tabdata"></TD>						<TD CLASS="tabdata"></TD>						<TD CLASS="tabdata">Y</TD>				<TD CLASS="tabdata"></TD></TR>
+					<TR><TD CLASS="tabdata">Transactional Replication (bi-directional)</TD>	<TD CLASS="tabdata">Y</TD>					<TD CLASS="tabdata">Y</TD>						<TD CLASS="tabdata">Y</TD>						<TD CLASS="tabdata"></TD>				<TD CLASS="tabdata">Y</TD></TR>
+					
+				</TABLE>
+
+				<H2 ID="SnapshotAgent">Snapshot Agent</H2>
+
+					<UL>
+						<LI>It is executed at the distributor and is responsible for preparing the initial data files and schema information (creating initial snapshot) about the articles that will be published.</LI>
+						<LI>
+							It provides the data required to perform the initial synchronization of the publication database with the subscription database.
+							Transactional Replication and Merge replication use other agents to keep the data in sync afterwards.
+							For both topologies, replication will use the Snapshot Agent again (after the initial synchronization) only when requested a fresh re-synchronization.
+							Snapshot Replication, on the other hand, uses the Snapshot Agent exclusively to replicate data.</LI>
+						<LI>Although this is not the only way to execute the initial synchronization, it is the most convenient way.</LI>
+						<LI>Snapshot Replication process:</LI>						
+							<OL>
+								<LI>SQL Server places a shared lock on the published tables while the bcp utility generates the data files. This allows the Snapshot Agent to guarantee transactional consistency of the data; however, it blocks other requests trying to write to those tables while the locks are in place. Depending on the size of the tables, the time it takes to create the snapshot can be substantial, but this is the only way to guarantee transactional consistency in snapshot replication.</LI>
+								<LI>The agent generates the scripts necessary to drop and create the replicated objects on the Subscriber.</LI></LI>
+								<LI>The agent then uses the bcp utility to generate files that contain copies of the data from all the published tables.</LI></LI>
+								<LI>The agent places the files in the snapshot folder and maintains a record of each file in the distribution database.</LI></LI>
+							</OL>
+
+						<LI>Transactional Replication process:</LI>
+							
+							<OL>
+								<LI>(the shared table locks are not required; this method allows changes to the published tables during the snapshot generation process)</LI>
+								<LI>When the process starts, SQL Server places a table lock on all tables involved in the publication and then writes a marker to the log file associated with the publication database.</LI>
+								<LI>The marker indicates the beginning of the snapshot process.</LI>
+								<LI>Right after the marker is written, SQL Server releases the locks.</LI>
+								<LI>The agent then generates the bcp files without taking further table locks, but be aware that SQL Server maintains fine-grained, short-lived locks at the page and row levels.</LI>
+								<LI>After the Snapshot Agent creates the bcp files, SQL Server writes another marker to the log file of the publication database, recording the end of the snapshot process.</LI>
+								<LI>These markers are then used by the Log Reader Agent to copy any changes committed to the published objects (as recorded in the log file between those two markers) to the distribution database.</LI>
+								<LI>This technique relies on markers written to the database log during the snapshot generation.</LI>
+								<LI>The Log Reader Agent picks up these markers, and the Distribution Agent then uses the markers to figure out which changes still need to be applied to the Subscriber and which changes were already picked up by the Snapshot Agent.</LI>
+								<LI>When it is time to apply the snapshot, the Distribution Agent uses the scripts generated by the Snapshot Agent during the first step to drop and re-create the tables in the subscription database.</LI>
+								<LI>It then bulk-loads the data from the bcp files in the snapshot folder into those tables.</LI>
+								<LI>During the load process, SQL Server maintains table locks on all subscription tables affected.</LI>
+								<LI>With the table locks still in place, as the last step, the Distribution Agent uses the log data that captured the activity during the snapshot generation to bring all tables into transactional consistent state.</LI>
+								<LI>After creating the snapshot, query distribution.dbo.MSrepl_commands table, it will contain one record for each file that was generated. The table also contains records for other replication-related activity, such as changes to the data.</LI>
+							</OL>
+							
+						<LI>Merge Replication process:</LI>
+						
+							<OL>
+								<LI>(because Merge Replication does not use the Log Reader Agent, it cannot use these markers and concurrent snapshot processing is therefore not an option)</LI>
+								<LI>Agent takes a lock on all published tables during a portion of the time it takes to generate the snapshot.</LI>
+								<LI>This ensures transactional consistency between the publication and subscription databases. This description is a stark over simplification of what is actually going on during snapshot creation.</LI>
+								<LI>Most of the locks are not actually taken on the published tables. Instead, they're taken on the metadata tables created by Merge Replication to hold the information about data changes. Even so, the locks still block other transactions trying to write to the published tables because those transactions would fire the Merge Replication triggers that write to the metadata tables. However, those locks do not interact with other reading transactions.</LI>
+								<LI>In addition, the length that each lock is taken has nothing to do with the amount of data in the published tables. Instead, it depends on the amount of data in the metadata tables, which is directly related to the amount of changes in the published tables since the last synchronization. Because of this, the Snapshot Agent is able to hold on to the locks for a shorter time in most cases.</LI>
+								<LI>The published tables cannot be updated during the time those locks are held.</LI>
+								<LI>Processes attempting to update any of the published tables (or to change non-table articles) are therefore going to be blocked.</LI>
+								<LI>Because of this locking behavior, try to schedule the snapshot generation to run during off-peak hours.</LI>
+							</OL>
+					</UL>
+
+				<H2 ID="LogReaderAgent">Log Reader Agent</H2>
+
+					<UL>
+						<LI>The agent scans the transaction log of the publication database and examines each committed transaction to determine whether any changes affect the replicated articles. If they do, those changes are logged to the distribution database.</LI>
+						<LI>Each database that participates in Transactional Replication has its own Log Reader Agent.</LI>
+							<OL>
+								<LI>Each time a database object changes, SQL Server first writes a record to the database's transaction log.</LI>
+								<LI>SQL Server applies the changes to the actual data pages.</LI>
+								<LI>When the transaction is committed, SQL Server forces the log records to be written to disk before signaling success.</LI>
+								<LI>This process is an integral part of any ACID-compliant RDBMS.</LI>
+								<LI>During this process, SQL Server records all the information necessary to apply or re-apply the changes to the data pages.</LI>
+							</OL>
+						<LI>For example, if a power outage occurs before all data pages have been written to disk, but after the transaction committed, these log records allow SQL Server to redo the changes and finish the write operations upon restart.</LI>
+						<LI>Transactional Replication uses the same information to apply changes made to published objects in the publication database to the target objects in the subscription database.</LI>
+						<LI>If a DML or DDL statement modifies a published object in the publication database, SQL Server marks the log file record of that change with a replication flag.</LI>
+						<LI>SQL Server does not mark changes to non-replicated objects, even if they are in the same transaction as published objects.</LI>
+						<LI>
+							It connects to the Publisher, searches the log file for records that are marked with the replication flag, and copies to the distribution database the information necessary to apply the changes to the subscription database.
+							Because of this process, replication can have a significant impact on the log file size of the publication database.
+							One reason for this has to do with VLFs.</LI>
+							<UL>
+								<LI>
+									A log file is split into VLFs, and as long as one is required, that VLF and the ones that logically follow cannot be reused.
+									For example, a VLF might be required for a lengthy period of time for long-running transactions or outstanding log backups.
+									Only after SQL Server does not need a VLF to warrant transactional consistency will it be reused.
+									SQL Server manages this process automatically.</LI>
+								<LI>
+									With replication, however, there is an additional reason that can prevent VLFs from being reused.
+									Because it has to process every log record in the publication database, reuse cannot occur until it processes all records in the VLF.</LI>
+								<LI>Several situations can prevent the agent from processing log records in a timely manner.</LI>
+									<UL>
+										<LI>The most obvious ones are the Distributor being down or the Log Reader Agent not running.</LI>
+										<LI>An overloaded Distributor can also cause a delay in log record processing.</LI>
+									</UL>
+								<LI>
+									When the VLFs cannot be reused, the log file must grow to continue to function, and the file fills up.
+									Depending on the log file's auto-growth setting, this operation can take a significant amount of resources.
+									If the log file has reached its configured maximum size or the drive is full, SQL Server will prevent any further write access to that database until the issue is resolved.</LI>
+							</UL>
+						</UL>
+					
+				<H2 ID="DistributionAgent">Distribution Agent</H2>
+
+					<UL>
+						<LI>The Distribution Agent replicates changes to the Subscriber.</LI>
+						<LI>It always uses Windows authentication to connect to the local instance where it is located.</LI>
+						<LI>Data flow:</LI>
+							<OL>
+								<LI>Used with both Snapshot and Transactional Replication, this agent applies snapshots to subscribers, and moves the transactions to the subscribers.</LI>
+								<LI>It connects to the Distributor and reads the recorded changes.</LI>
+								<LI>Then it connects to the Subscriber and applies those changes in the order they occurred.</LI>
+							</OL>
+						<LI>
+							That order is guaranteed within a single subscription and single publication, but not across publications.
+							In some cases, this can lead to logical inconsistencies. For example, if you have two tables that have a foreign key relationship on the Publisher and those two tables are published in separate publications, two inserts into the two tables could get executed in the wrong order on the Subscriber, leading to a temporarily orphaned record in the child table.
+							However, replication by default does not copy foreign key constraints to the Subscriber, so you will not receive an error if a logical inconsistency should occur. To be safe, tables that have a foreign key relationship should always be published in the same publication.</LI>
+						<LI>
+							If the subscription is a Push Subscription, the Distributor is in control of when the distribution to each Subscriber occurs.
+							In most cases, this model is most likely used, but if there are several subscribers that needs the data flow to be started and stopped to each of them at different times (such as having to wait for a nightly reporting process), use the Pull Subscription model instead.</LI>
+					</UL>
+
+				<H2 ID="MergeAgent">Merge Agent</H2>
+
+					<UL>
+						<LI>This agent provides the initial snapshot to the subscriber, like the Distribution Agent.</LI>
+						<LI>Each subscription has its own Merge Agent that handles the reconciliation of data between the publisher and the subscriber.</LI>
+						<LI>It bi-directionally synchronizes changes between the publication database and the subscription database.</LI>
+						<LI>A set of triggers in both databases support this process.</LI>
+					</UL>
+
+				<H2 ID="QueueReaderAgent">Queue Reader Agent</H2>
+
+					<UL>
+						<LI>Used with bi-directional type of Transactional replication, the Queue Reader Agent allows updatable subscriptions.</LI>
+						<LI>When updates from the subscriber are provided to the publisher, these updates can be queued and then processed as a unit.</LI>
+						<LI>This agent runs at the distributor, and only one instance is required for all publications in the distribution database.</LI>
+					</UL>
+		</DIV>
+		
+	</BODY>
+</HTML>	

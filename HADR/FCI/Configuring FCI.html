@@ -1,0 +1,189 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle" ID="Overview"><TR><TD>Configuring FCI</TD></TABLE>
+
+		<DIV CLASS="main">
+			
+			<UL>
+				<LI>Make sure that the cluster is already <A HREF="..\Always On AG\Configuring WSFC.html" TARGET="_blank">created</A>.</LI></BR>
+			</UL>
+
+			<H2 ID="ConfiguringDisks">Configuring Disks</H2>
+
+				<P>Note: Disks cannot be created on any of the server that is part of the cluster.</P>
+
+				<OL>
+					<LI>Open Server Manager. Go to File and Storage Services &gt iSCSI.</LI>
+						</BR><IMG SRC="IMG\001.png" WIDTH=30% /></BR>
+					<LI>Click "To create an iSCSI virtual disk, start the New iSCSI Virtual Disk Wizard".</LI>
+						</BR><IMG SRC="IMG\002.png" WIDTH=50% /></BR>
+					<LI><B>iSCSI Virtual Disk Location</B> – Select a server where the disk will be created and the storage location.</LI>
+						</BR><IMG SRC="IMG\003.png" WIDTH=50% /></BR>
+					<LI><B>iSCSI Virtual Disk Name</B> – Provide a virtual disk name.</LI>
+						</BR><IMG SRC="IMG\004.png" WIDTH=50% /></BR>
+					<LI><B>iSCSI Virtual Disk Size</B> – Specify disk space and choose a type of disk.</LI>
+						</BR><IMG SRC="IMG\005.png" WIDTH=50% /></BR>
+					<LI><B>iSCSI Target</B> – Assign the virtual disk to an existing iSCSI target or create a new one.</LI>
+						</BR><IMG SRC="IMG\006.png" WIDTH=50% /></BR>
+					<LI><B>Target Name and Address</B> – Specify target name.</LI>
+						</BR><IMG SRC="IMG\007.png" WIDTH=50% /></BR>
+					<LI><B>Access Servers</B> – Click Add to specify the iSCSI initiators that will access this iSCSI virtual disk.</LI>
+						</BR>
+							<DIV CLASS="sidebysidecenterdiv">
+								<IMG SRC="IMG\008.png" WIDTH=50% CLASS="sidebysidecenter" />
+								<IMG SRC="IMG\009.png" WIDTH=25% CLASS="sidebysidecenter" />
+							</DIV>
+						</BR>
+					<LI>Finish the wizard.</LI>
+						</BR><IMG SRC="IMG\010.png" WIDTH=50% /></BR>
+					<LI>Right-click on the created virtual disk and select Assign iSCSI Virtual Disk.</LI>
+						</BR><IMG SRC="IMG\011.png" WIDTH=50% /></BR>
+					<LI><B>iSCSI Target</B> – Select the created iSCSI target.</LI>
+						</BR><IMG SRC="IMG\012.png" WIDTH=50% /></BR>
+					<LI>Finish the wizard.</LI>
+						</BR><IMG SRC="IMG\013.png" WIDTH=50% /></BR>
+					<LI>Go to one of the servers.  Open Server Manager. Go to iSCSI Initiator.</LI>
+						</BR><IMG SRC="IMG\014.png" WIDTH=50% /></BR>
+					<LI>Connect to the server where the disk is created.</LI>
+						</BR>
+							<DIV CLASS="sidebysidecenterdiv">
+								<IMG SRC="IMG\015.png" WIDTH=31% CLASS="sidebysidecenter" />
+								<IMG SRC="IMG\016.png" WIDTH=30% CLASS="sidebysidecenter" />
+							</DIV>
+						</BR>
+				</OL>
+
+			<H2 ID="BringingTheDiskOnline">Bringing the Disk Online</H2>
+
+				<P>Note: Perform this on every disk that will be used.</P>
+
+				<OL>
+					<LI>Open Computer Management. Go to Storage &gt Disk Management. Right-click on the disk and select Online.</LI>
+						</BR><IMG SRC="IMG\017.png" WIDTH=50% /></BR>
+					<LI>Right-click on the disk and select Initialize.</LI>
+						</BR>
+							<DIV CLASS="sidebysidecenterdiv">
+								<IMG SRC="IMG\018.png" WIDTH=50% CLASS="sidebysidecenter" />
+								<IMG SRC="IMG\019.png" WIDTH=20% CLASS="sidebysidecenter" />
+							</DIV>
+						</BR>
+					<LI>Right-click on an unallocated disk, and then choose New Simple Volume.</LI>
+						</BR><IMG SRC="IMG\020.png" WIDTH=40% /></BR>
+					<LI>Choose a volume size between its minimum and maximum.</LI>
+						</BR><IMG SRC="IMG\021.png" WIDTH=20% /></BR>
+					<LI>Assign a drive letter or mount it in an empty NTFS folder.</LI>
+						</BR><IMG SRC="IMG\022.png" WIDTH=20% /></BR>
+					<LI>Format the disk.</LI>
+						</BR><IMG SRC="IMG\023.png" WIDTH=20% /></BR>
+					<LI>Finish the wizard.</LI>
+						</BR><IMG SRC="IMG\024.png" WIDTH=20% /></BR>
+					<LI>When performing previous steps on other nodes, in the Disk Management, disks should be automatically added but is offline. As soon as it is set to Online, it should detect the configured disk name and drive letter.</LI>
+				</OL>
+
+			<H2 ID="AddingDisksToTheCluster">Adding Disks to the cluster</H2>
+				
+				<OL>
+					<LI>In Failover Cluster Manager, go to Storage. Right-click on Disks, and then choose Add disk.</LI>
+						</BR><IMG SRC="IMG\025.png" WIDTH=15% /></BR>
+					<LI>Select the disk/s that will be added.</LI>
+						</BR>
+							<DIV CLASS="sidebysidecenterdiv">
+								<IMG SRC="IMG\026.png" WIDTH=35% CLASS="sidebysidecenter" />
+								<IMG SRC="IMG\027.png" WIDTH=55% CLASS="sidebysidecenter" />
+							</DIV>
+						</BR>
+				</OL>
+
+			<H2 ID="AddingTheQuorumDisk">Adding the Quorum Disk</H2>
+			
+				<OL>
+					<LI>Open Failover Cluster Manager. Click on More Actions, and then select "Configure Cluster Quorum Settings".</LI>
+						</BR><IMG SRC="IMG\028.png" WIDTH=60% /></BR>
+					<LI><B>Select Quorum Configuration Option</B> – Select a quorum configuration from the following:</LI></BR>
+						<UL>
+							<LI>Use default quorum configuration</LI>
+							<LI>Select the quorum witness</LI>
+							<LI><B>Advanced quorum configuration</B> – Select this option if quorum will be configured from an added disk.</LI>
+						</UL>
+						</BR><IMG SRC="IMG\029.png" WIDTH=45% /></BR>
+					<LI><B>Select Voting Configuration</B> – Assign or remove node votes in the cluster. By explicitly removing a node’s vote, adjust the quorum of votes required for the cluster to continue running.</LI>
+						</BR><IMG SRC="IMG\030.png" WIDTH=45% /></BR>
+					<LI><B>Select Quorum Witness</B> – Select a quorum witness option to add or change the quorum witness for the cluster configuration. Configure a quorum witness to achieve highest availability of the cluster.</LI>
+						</BR><IMG SRC="IMG\031.png" WIDTH=45% /></BR>
+					<LI><B>Configure Storage Witness</B> – Select the storage volume that will be assigned as the disk witness.</LI>
+						</BR><IMG SRC="IMG\032.png" WIDTH=45% /></BR>
+					<LI>Finish the wizard.</LI>
+				</OL>
+
+			<H2>SQL Server Installation</H2>
+
+				<H3 ID="InstallingSQLServerPrimaryNode">Installing SQL Server (primary node)</H3>
+
+					<OL>
+						<LI>Run the setup.exe as administrator.</LI></BR>
+						<LI><B>Installation</B> – Choose "New SQL Server failover cluster installation".</LI>
+						<LI><B>Install Failover Cluster Rules</B> – Fix errors (and warnings, if possible), if one occured.</LI>
+						<LI><B>Setup Role</B> – Select SQL Server Feature Installation (In 2014 and prior but not in 2016 onwards).</LI>
+							</BR><IMG SRC="IMG\035.png" WIDTH=45% /></BR>
+						<LI><B>Feature Selection</B> – Select Database Engine Services and all under it except "PolyBase Query Service for External Data", unless necessary. Select Client Tools Connectivity.</LI>
+							</BR><IMG SRC="IMG\036.png" WIDTH=45% />
+							<P>SSAS and SSRS are not cluster aware and should not be included in the installation. In 2014 and below, SSMS can be selected; in 2016, it is a separate installation.</P>
+						<LI><B>Instance Configuration</B> – Configure the following:</LI></BR>
+							<UL>
+								<LI>SQL Server Network Name (cluster name, ex: SQLCluster2014).</LI>
+								<LI>Choose between Default or Named Instance.</LI>
+							</UL>
+							</BR><IMG SRC="IMG\037.png" WIDTH=45% /></BR>
+						<LI><B>Cluster Disk Selection</B> – Specify the shared disks to be included in the SQL Server resource cluster group . The first drive will be used as the default drive for all databases; but this can be changed in the Database Engine or Anaysis Services configuration page.</LI>
+							</BR><IMG SRC="IMG\038.png" WIDTH=60% /></BR>
+						<LI><B>Cluster Network Configuration</B> – Specify network resources for the SQL Server failover cluster.</LI>
+							</BR><IMG SRC="IMG\039.png" WIDTH=60% /></BR>
+						<LI><B>Server Configuration</B> – Specify the service accounts and collation configuration.</LI>
+							</BR>
+								<DIV CLASS="sidebysidecenterdiv">
+									<IMG SRC="IMG\040.png" WIDTH=47% CLASS="sidebysidecenter" />
+									<IMG SRC="IMG\041.png" WIDTH=43% CLASS="sidebysidecenter" />
+								</DIV>
+							</BR>							
+						<LI><B>Database Engine Configuration</B> – Configure the following:</LI>
+							<UL>
+								<LI>Server Configuration</LI></BR>
+									<UL>
+										<LI>Choose between Windows Authentication or Mixed Mode.</LI>
+										<LI>Specify additional SQL Server administrators.</LI>
+									</UL>
+									</BR><IMG SRC="IMG\042.png" WIDTH=50% /></BR>
+								<LI>Data Directories</LI>
+									</BR><IMG SRC="IMG\043.png" WIDTH=35% /></BR>
+								<LI>TempDB</LI>
+									</BR><IMG SRC="IMG\044.png" WIDTH=50% /></BR>
+								<LI>FILESTREAM</LI>
+									</BR><IMG SRC="IMG\045.png" WIDTH=40% /></BR>
+							</UL>
+						<LI>Finish the wizard.</LI>
+					</OL>
+
+				<H3 ID="InstallingSQLServerSecondaryNode">Installing SQL Server (secondary node)</H3>
+
+					<OL>
+						<LI>Run the setup.exe as administrator.</LI></BR>
+						<LI><B>Installation</B> – Choose "Add node to a SQL Server failover cluster".</LI>
+							</BR><IMG SRC="IMG\047.png" WIDTH=40% /></BR>
+						<LI><B>Add Node Rules</B> – Fix errors (and warnings, if possible), if one occured.</LI>
+						<LI><B>Cluster Node Configuration</B> – Confirm the addition of the node to an existing SQL Server failover cluster.</LI>
+							</BR><IMG SRC="IMG\049.png" WIDTH=40% /></BR>
+						<LI><B>Cluster Network Configuration</B> – Confirm the configuration.</LI>
+							</BR><IMG SRC="IMG\050.png" WIDTH=50% /></BR>
+						<LI><B>Service Accounts</B> – Provide passwords of the configured service accounts.</LI>
+							</BR><IMG SRC="IMG\051.png" WIDTH=50% /></BR>
+						<LI>Finish the wizard.</LI>
+				</OL>	
+			
+		</DIV>
+	</BODY>
+</HTML>	

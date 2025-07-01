@@ -1,0 +1,229 @@
+<HTML>
+	<HEAD>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="../../Menu and Sidebar/Misc/main.css">
+	</HEAD>
+	
+	<BODY>
+		
+		<TABLE WIDTH=100% CLASS="maintitle" ID="Overview"><TR><TD>Database Mirroring</TD></TABLE>
+
+		<DIV CLASS="main">
+		
+			<BR /><IMG SRC="IMG/01.PNG" WIDTH=40% /><BR />
+		
+			<H2>Overview</H2>
+
+		<UL>
+			<LI>A DR and HA technique that allows you to have a second server to be a "hot" stand-by copy of the main server, ready to take over any moment the main server fails.</LI>
+			<LI>One SQL Server instance acts as a primary instance called the principal, while the other is a mirrored instance called the mirror.</LI>
+			<LI>In special cases, there can be a third SQL Server instance that acts as a witness.</LI>
+			<LI>A common mirroring configuration is the environment with two database servers with one instance each and a database that will be mirrored.</LI>solution has a major flaw because if the server goes down, both instances will be unavailable.</LI>
+			<LI>Different SQL Server versions can be combined, but it’s not recommended.</LI>
+			<LI>System databases can’t be mirrored.</LI>
+		</UL>
+		
+		<P><B>Advantages</B></P>
+
+			<UL>
+				<LI>A built-in SQL Server feature.</LI>
+				<LI>Relatively easy to set up.</LI>
+				<LI>Can provide automatic failover in high safety mode, etc.</LI>
+				<LI>Can be combined with other DR options such as clustering, log shipping, and replication.</LI>
+			</UL>
+
+		<P><B>Disadvantage</B></P>
+
+			<UL>
+				<LI>Will be removed from SQL Server in future versions in favor of AlwaysOn Availability Groups.</LI>
+				<LI>It is per database only solution, which means that logins and jobs from the principal SQL Server must be manually recreated on the mirror.</LI>
+				<LI>There is also possibility for delay, which can only be reduced with better hardware.</LI>
+			</UL>
+
+
+		<H2 ID="OperatingModes">Operating Modes</H2>
+			
+			<UL>
+
+				<LI><B>High safety</B></LI>
+					<UL>
+						<LI>Data is written and must be committed synchronously both on the principal and mirror databases. Only after committing on both databases, the application can continue running.</LI>
+						<LI>Might produce latency and slower operation because transactions must be committed on both databases.</LI>
+						<LI>If the principal database goes down, two options are available:</LI>
+							<OL>
+								<LI>Do nothing – Wait for the principal to become available again. During that time, the SQL Server instance is unavailable. Mirroring will continue where it has stopped.</LI>
+								<LI>Force the SQL Server instance on the mirror database – The mirror database becomes the principal. Possible data loss due to committed transactions on the original principal database which are not yet committed on the mirror currently acting as the principal.</LI>
+							</OL>
+					</UL>
+
+				<LI><B>High safety with automatic failover</B></LI>
+					<UL>
+						<LI>Same as High Safety mode (first two bullets).</LI>
+						<LI>Three servers are necessary (with Witness server).</LI>
+						<LI>If the principal database goes down, let the automatic failover process complete, the mirrored database becomes the principal.</LI>
+					</UL>
+
+				<LI><B>High performance</B></LI>
+					<UL>
+						<LI>The asynchronous communication, data is written and committed on the principal server, and later sent and committed to the mirror server.</LI>
+						<LI>Automatic failover isn’t possible and the witness server can’t be used.</LI>
+						<LI>Only available in the Enterprise edition of SQL Server.</LI>
+						<LI>If the principal database goes down, three options are available:</LI>
+							<OL>
+								<LI>Same as High Safety mode (first two items).</LI>
+								<LI>Manual update – To reduce data loss, take the tail of the log backup if the failed server allows, remove mirroring and restore the tail of the log on the previously mirrored database.</LI>
+							</OL>
+					</UL>
+			</UL>
+
+		<H2 ID="Configuration">Configuration</H2>
+		
+			<H3>Validations on both servers</H3>
+		
+				<UL>
+					<LI>Same system collation settings.</LI>
+					<LI>Same Local Windows groups and SQL Server logins.</LI>
+					<LI>Same installed External software components.</LI>
+					<LI>Same SQL Server software version.</LI>
+					<LI>Same Global assemblies deployment.</LI>
+					<LI>Matched certificates and keys used to access external resources, authentication and encryption.</LI>
+				</UL>
+
+			<H3>Configuration</H3>
+
+				<OL>
+					<LI>On both nodes, pause all automated backup jobs.</LI>
+					<LI>On the principal, perform one full backup and one transaction log backup.</LI>
+<PRE>
+BACKUP DATABASE &ltdbname&gt
+TO DISK = N'D:\full.bak'
+WITH
+	NOFORMAT, NOINIT, NAME = N'Full Database Backup Full', SKIP,
+	NOREWIND, NOUNLOAD, COMPRESSION, STATS = 10, CHECKSUM
+GO
+BACKUP LOG &ltdbname&gt
+TO DISK = N'D:\log.trn'
+WITH
+	NOFORMAT, NOINIT, NAME = N'Database Backup Log', SKIP,
+	NOREWIND, NOUNLOAD, COMPRESSION, STATS = 10, CHECKSUM
+
+</PRE>
+					<LI>On the mirror, restore the database with NO RECOVERY option.</LI>
+<PRE>
+USE master
+GO
+ALTER DATABASE &ltdbname&gt SET SINGLE_USER WITH ROLLBACK IMMEDIATE
+GO
+BACKUP LOG &ltdbname&gt
+TO DISK = N'D:\full.bak'
+WITH
+	NOFORMAT, NOINIT, NAME = N'Database Backup Log Tail', NOSKIP,
+	NOREWIND, NOUNLOAD, NORECOVERY, STATS = 5
+GO
+RESTORE DATABASE &ltdbname&gt
+FROM DISK = N'D:\full.bak'
+WITH FILE = 1, NORECOVERY, NOUNLOAD, REPLACE, STATS = 5
+GO
+RESTORE LOG &ltdbname&gt FROM DISK = N'D:\log.trn'
+WITH FILE = 1, NORECOVERY, NOUNLOAD, STATS = 5
+
+</PRE>
+					<LI>On the principal, right-click on the database and choose Properties. On the Mirroring section, choose Configure Security.</LI>
+						<OL>
+							<LI><B>Include Witness Server</B> - If you will specify a witness, specify it after the wizard, for easier troubleshooting.</LI>
+							<LI><B>Choose Servers to Configure</B> - Choose where to save the security configuration.</LI>
+							<LI><B>Principal Server Instance</B> - Specify information about the server instance where the database was originally located.</LI>
+							<LI><B>Mirror Server Instance</B> - Specify information about the server instance where the mirror copy of the database will be located.</LI>
+							<LI><B>Witness Server Instance</B> - Specify the server instance that monitors the status of the principal and mirror server instances.</LI>
+							<LI><B>Service Accounts</B> - Specify the service accounts of the server instances.</LI>
+						</OL>
+					<LI>Finish the wizard.</LI>
+					<LI>If you encounter an error due to "..middle of restore..", try <A HREF="#MiddleofRestore" TARGET="body">this</A>.</LI>
+					<LI>Check database mirroring if healthy.</LI>
+					<LI>Add Witness server, if applicable:</LI>
+<PRE>
+ALTER DATABASE &ltdbname&gt SET WITNESS = 'TCP://&ltserver&gt:1433'
+
+</PRE>
+					<LI>Select the operating mode, either high safety or high performance. If the witness server is specified choosing high safety mode will result in high safety with automatic failover.</LI>
+						<BR /><IMG SRC="IMG/03.PNG" WIDTH=100% /><BR />					
+					<LI>On both nodes, resume the log backup jobs.</LI>
+				</OL>
+
+		<H2 ID="Troubleshooting">Troubleshooting</H2>
+
+			<UL>
+
+				<LI><B>Disconnected (try one at a time)</B></LI>
+					<UL>
+						<LI>Restart endpoint on both sides. (get the dynamic script from NICE's laptop)</LI>
+<PRE>
+ALTER ENDPOINT db_name STATE=STOPPED;
+
+ALTER ENDPOINT db_name STATE=STARTED;
+
+</PRE>
+
+						<LI>Run below script:</LI>
+
+<PRE>
+ALTER DATABASE db_name SET PARTNER RESUME;
+
+</PRE>
+
+						<LI>Recreate endpoint.</LI>
+					</UL></BR>
+
+				<LI><B>Database is not configured for database mirroring.</B></LI>
+
+					<BR /><IMG SRC="IMG/04.PNG" WIDTH=90% /><BR />
+					<P>Solution: Mirrored database was not restored with NO RECOVERY. Restore it again using NO RECOVERY option.</P>
+
+				<LI ID="MiddleofRestore"><B>Database cannot be opened. It is in the middle of restore.</B></LI>
+
+					<BR /><IMG SRC="IMG/05.PNG" WIDTH=90% /><BR />	
+					<P>Solution: Issue with SSMS 2016 (or other versions somewhere near it). Use below script:</P>
+<PRE>
+-- run on mirror server
+USE [master];
+
+ALTER DATABASE AdventureWorksLT2017_2 -- replace database name
+SET PARTNER = 'TCP://SQL-REPLICATION.EAPB.COM:5022' -- replace to primary server with domain and correct port
+GO
+
+-- run on principal
+USE [master];
+
+ALTER DATABASE AdventureWorksLT2017_2
+SET PARTNER = 'TCP://SQL-SUBSCRIBER.EAPB.COM:5022'  -- replace to mirror server with domain and correct port
+GO
+
+-- verify status
+SELECT mirroring_state_desc 
+FROM sys.database_mirroring
+WHERE database_id = DB_ID('AdventureWorksLT2017_2')
+</PRE>
+
+				<LI><B>SQL Server service keeps stopping.</B></LI>
+				
+					<P>Scenario:</P>
+					
+					<OL>
+						<LI>Systems Team needed to perform a OS upgrade on a server which has a Database Mirroring setup to another server.</LI>
+						<LI>Systems performed snapshot prior to upgrade then DBA stopped SQL Server services. Snapshot needs to be performed first due to snapshot needs to be performed and done prior to maintenance window and SQL Server services needs to be stopped once maintenance window starts.</LI>
+						<LI>Upgrade failed and needed to roll back from snapshot.</LI>
+						<LI>SQL Server Agent keeps getting stopped. It turns out that there had been a discrepancy between the LSN of Principal and Mirror database causing the database corruption.</LI>
+						<LI>Solution was to rebuild the Database Mirroring setup. T-SQL is recommended to be used instead of GUI since some version of SSMS causes bug on the setup.</LI>
+					</OL>
+				
+					<P>Errors in Event Viewer:</P>
+					
+					<UL>
+						<LI>SQL Server is terminating in response to a 'stop' request from Service Control Manager.</LI>
+						<LI>An error occurred while processing the log for database. If possible, restore from backup. If a backup is not available, it might be necessary to rebuild the log.</LI>
+					</UL>
+				
+			</UL>
+
+		</DIV>
+	</BODY>
+</HTML>	
