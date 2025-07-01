@@ -2,7 +2,7 @@
 ## To work around this, we can force PowerShell to rename it twice: first to a temporary extension (like .temp), and then back to .PNG. 
 
 
-Get-ChildItem -Recurse -Filter *.png | ForEach-Object {
+Get-ChildItem -Recurse -Filter *.jpg | ForEach-Object {
     $original = $_.FullName
     $temp = [System.IO.Path]::ChangeExtension($original, ".temp")
     $target = [System.IO.Path]::ChangeExtension($original, ".PNG")
