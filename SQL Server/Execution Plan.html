@@ -9,6 +9,23 @@
 		
 		<DIV CLASS="main">
 		
+				<H2>Estimate vs. Actual Execution Plan</H2>
+				
+					<TABLE WIDTH="100%">
+						<TR><TD CLASS="tabhead">Estimate</TD><TD CLASS="tabhead">Actual</TD></TR>
+						<TR><TD CLASS="tabdata">Generated before the query is executed.</TD><TD CLASS="tabdata">Generated after the query is executed.</TD></TR>
+						<TR><TD CLASS="tabdata">SQL Server (or another DBMS) predicts how it will execute the query based on statistics, indexes, and cost estimations.</TD><TD CLASS="tabdata">Shows the real execution path the database took, including actual row counts, I/O usage, and memory consumption.</TD></TR>
+						<TR><TD CLASS="tabdata">It doesn’t consider runtime factors like actual row counts or parallelism adjustments. Useful for query tuning without running the query.</TD><TD CLASS="tabdata">More reliable for performance analysis because it includes real execution details.</TD></TR>
+					</TABLE>
+					
+					<H3>Causes of difference</H3>
+						
+						<UL>
+							<LI>If statistics are outdated, the estimated plan might predict fewer or more rows than the actual execution, leading to inefficient query execution.</LI>
+							<LI>Parameter sniffing can cause SQL Server to generate an inefficient execution plan based on initial inputs.</LI>
+							<LI>Runtime optimizations (e.g., parallelism, index usage) may cause deviations from the estimated plan.</LI>
+						</UL>
+		
 				<H2>Physical vs Logical Reads</H2>
 				
 					<UL>

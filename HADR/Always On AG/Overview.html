@@ -47,6 +47,18 @@
 							<LI>Supports encryption and compression, which provide a secure, high performing transport.</LI>
 							<LI>Provides an integrated set of tools to simplify deployment and management of AGs.</LI>
 						</UL>
+					<LI>Limitation of BAG (Standard Edition)</LI>
+						<UL>
+							<LI>One database per AG.</LI>
+							<LI>One secondary replica only.</LI>
+							<LI>Secondary replica is not readable.</LI>
+							<LI>No automatic failover.</LI>
+							<LI>Synchronous-commit only.</LI>
+							<LI>No DAG.</LI>
+							<LI>No direct seeding.</LI>
+							<LI>No Automatic Page Repair.</LI>
+							<LI>Secondary replica must not be used for any workload unless a failover occurs.</LI>
+						</UL>
 				</UL>
 				
 			<H2 ID="AvailabilityReplicas">Availability Replicas</H2>
