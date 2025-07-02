@@ -16,6 +16,7 @@ BACKUP LOG Admin TO DISK = @path WITH NORECOVERY
 
 -- 4. Generate FULL, DIFF, and T-LOG restore scripts
 -- Include this on the last t-log (WITH STOPAT = '2025-04-01 07:29:01') -- change date as necessary
+-- If the mistake happened close to or during a scheduled log backup, never assume it's safe. Always use STOPAT when you're unsure, even on regular log backups, not just tail logs.
 
 -- sample only
 --RESTORE DATABASE admin FROM DISK = N'\\LAPTOP-IMGT9ROF\D$\Virtual Box\SQL SERVER\S\LAPTOP-IMGT9ROF\Admin\FULL\LAPTOP-IMGT9ROF_Admin_FULL_20250401_072234.bak' WITH  FILE = 1,  NORECOVERY,  NOUNLOAD,  STATS = 5

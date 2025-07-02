@@ -29,6 +29,67 @@
 				
 			<H1>Did you know?!</H1>
 			
+				<H2>Why still use Log Shipping and/or Mirroring vs. BAG/AG</H2>
+
+When to Still Use Log Shipping
+Cost-Effective Disaster Recovery:
+
+Log shipping does not require SQL Server Enterprise Edition (AGs do), making it a cheaper DR solution for Standard Edition users.
+
+When to Still Use Database Mirroring
+Simple High Availability for a Single Database:
+
+If you only need HA for one database and don’t require multiple readable secondaries (which AGs provide), mirroring can be a simpler option.
+
+Lower Licensing Costs:
+
+Availability Groups require SQL Server Enterprise, whereas database mirroring can be used with SQL Server Standard (in synchronous mode).
+
+Automatic Failover Without AG Complexity:
+
+If you only need automatic failover for a single database and don’t want to configure a full AG setup, mirroring in synchronous mode with a witness server can be a simple alternative.
+
+Why Still Use Database Mirroring Instead of BAGs?
+Backward Compatibility
+
+If you're working with older SQL Server versions (before 2016) that support mirroring but not AGs.
+
+Simplicity & Ease of Setup
+
+Mirroring is easier to configure and requires fewer infrastructure changes than BAGs.
+
+BAGs require a Windows Server Failover Cluster (WSFC), even if there’s only one database, whereas mirroring does not.
+
+Faster Failover for a Single Database
+
+Mirroring can have automatic failover with a witness server in SQL Server Standard Edition.
+
+BAGs only support manual failover in Standard Edition, making mirroring the better option for fully automated failover scenarios.
+		
+Why Still Use Log Shipping Instead of BAGs?
+Disaster Recovery Across Different SQL Server Versions
+
+Log shipping works across different SQL Server versions (e.g., primary on SQL 2019 and secondary on SQL 2017), while BAGs require identical versions.
+
+Asynchronous DR with Point-in-Time Recovery
+
+Log shipping allows restoring logs at different intervals, useful for scenarios where point-in-time recovery is needed.
+
+BAGs replicate in near real-time, meaning data corruption or accidental deletes are also replicated instantly.
+
+Lower Complexity, No WSFC Required
+
+BAGs require Windows Server Failover Clustering (WSFC), which adds administrative overhead.
+
+Log shipping works independently without clustering, making it simpler to deploy.
+
+				<H2>Always Encrypted</H2>
+Always Encrypted ensures data remains encrypted even from SQL Server administrators.
+Encryption and decryption occur at the client-side.
+It uses two key types: Column Master Key (CMK) and Column Encryption Key (CEK).
+Advantages: Data is always encrypted, prevents unauthorized access from DBAs.
+Disadvantages: Queries require adjustments (e.g., no wildcard searches), higher performance overhead.			
+			
 				<H2>IaaS vs. PaaS</H2>
 
 IaaS
@@ -439,36 +500,6 @@ SELECT SERVERPROPERTY('ComputerNamePhysicalNetBIOS')
 							<LI>NORMALLY, SPID 1 to 50 is reserved for SQL Server internal processes, and the user process starts from SPID 51 (sessions over 50 may be system as well.). To be more accurate, use the is_user_process column in sys.dm_exec_sessions to tell which are system and which are user</LI>
 							<LI>If you kill a SPID, then do a reboot while it is doing a rollback, when SQL starts, the database that was doing a rollback will go into recovery (doing the rollback) until it's done. Meaning, it won't come online until it's done.</LI>
 						</UL>
-				
-				<H2>License Keys</H2>
-				
-					<TABLE WIDTH=100%>
-						<TR><TD CLASS="tabhead">Version</TD>
-							<TD CLASS="tabhead">Key</TD>
-						</TR>
-						<TR><TD CLASS="tabdata">SQL Server 2012 ?</TD>
-							<TD CLASS="tabdata">748RB-X4T6B-MRM7V-RTVFF-CHC8H</TD>
-						</TR>
-						<TR><TD CLASS="tabdata">SQL Server 2014 Enterprise Edition</TD>
-							<TD CLASS="tabdata">P7FRV-Y6X6Y-Y8C6Q-TB4QR-DMTTK</TD>
-						</TR>
-						<TR><TD CLASS="tabdata">SQL Server 2017 Enterprise Edition</TD>
-							<TD CLASS="tabdata">TDKQD-PKV44-PJT4N-TCJG2-3YJ6B / 6GPYM-VHN83-PHDM2-Q9T2R-KBV83</TD>
-						</TR>
-						</TR>
-						<TR><TD CLASS="tabdata">SQL Server 2019 Enterprise Edition</TD>
-							<TD CLASS="tabdata">HMWJ3-KY3J2-NMVD7-KG4JR-X2G8G</TD>
-						</TR>
-						<TR><TD CLASS="tabdata">SQL Server 2022 ?</TD>
-							<TD CLASS="tabdata">FG86G-CHH2T-CB7NJ-XT7D2-V8V4X</TD>
-						</TR>
-						<TR><TD CLASS="tabdata">Visual Studio 2013</TD>
-							<TD CLASS="tabdata">BWG7X-J98B3-W34RT-33B3R-JVYW9</TD>
-						</TR>
-						<TR><TD CLASS="tabdata">Visual Studio 2015 Enterprise Edition</TD>
-							<TD CLASS="tabdata">2XNFG-KFHR8-QV3CP-3W6HT-683CH / HM6NR-QXX7C-DFW2Y-8B82K-WTYJV</TD>
-						</TR>
-					</TABLE>
 					
 		</DIV>
 	</BODY>	
