@@ -65,8 +65,6 @@
 				<UL>
 					<LI>Logical container for grouping data files.</LI>
 					<LI>It helps in managing and organizing the data files for a database.</LI>
-					<LI>Used to improve performance by distributing database files across multiple disk drives.</LI>
-					<LI>Provides a way to perform partial database backups by allowing the backup and restoration of individual filegroups.</LI>
 					<LI>There are two types of filegroups: primary and user-defined (secondary).</LI>
 						<OL>
 							<LI>Primary filegroup contains the primary data file and any secondary files that aren't in other filegroups.</LI>
@@ -74,30 +72,86 @@
 						</OL>
 				</UL>
 				
-			<H2>Scenarios Where Restoring a Specific Filegroup Backup Makes Sense</H2>
-
-				<OL>
-					<LI><B>Partial Restore for Large Databases</B> - In VLDBs, restoring only affected filegroups instead of the whole DB saves time. Especially useful for read-only or archived filegroups that rarely change.</LI>
-					<LI><B>Damaged Filegroup Recovery</B> - If a data file belonging to a specific filegroup is corrupted or lost (e.g., due to disk failure), you can restore just that filegroup without impacting the rest of the DB.</LI>
-					<LI><B>Online Piecemeal Restore</B> - SQL Server Enterprise Edition allows restoring filegroups one at a time, while bringing other parts of the DB online.</LI> You can bring up core tables quickly while deferring less critical filegroups.
-					<LI><B>Restore Archived Historical Data</B> - If old data is kept in a separate filegroup (e.g., ArchiveFG), it can be excluded from daily backups and only restored when needed.</LI>
-					<LI><B>Testing or Migration</B> - You may want to detach/attach or restore a specific filegroup in a staging environment for testing without dealing with the full DB.</LI>
-				</OL>
-
-				<P>Important Notes:</P>
-
+				<H3>Key Uses</H3>
+				
 					<UL>
-						<LI>Primary filegroup must always be restored first.</LI>
-						<LI>Log backups are still needed to bring restored filegroups to a consistent point-in-time.</LI>
-						<LI>Backup must have been done at the filegroup level (ex: <CODE>BACKUP DATABASE ... FILEGROUP = 'ArchiveFG'</CODE>).</LI>
+						<LI><B>Distributing database files across multiple disk</B> by placing files in different filegroups reducing I/O bottlenecks.</LI>
+						<LI><B>Separate large tables and indexes</B> into different filegroups, making maintenance (ex: backups, restore, and index rebuild) easier.</LI>
+						<LI><B>Certain filegroups can be set as read-only</B>, useful for historical or archive data that doesn't change.</LI>
+						<LI><B>Provides a way to perform partial database backups</B> by allowing the backup and restoration of individual filegroups - useful for large databases where full restores take too long.</LI>
+						<LI><B>When using table partitioning</B>, you can assign different partitions to specific filegroups, improving query performance and data management.</LI>
+						<LI><B>Critical tables can be stored in separate filegroups</B> to ensure they are quickly available after a restore.</LI>
+						<LI><B>Damaged filegroups can be restored individually</B> without affecting the entire database.</LI>
+
 					</UL>
 					
-			<H2>Moving data between Filegroups</H2>
+				<H3>Best Practices on Setting up Filegroups</H3>
+				
+					<UL>
+						<LI>Plan Filegroup Layout Based on Workload</LI>
+							<UL>
+								<LI>Assign PRIMARY filegroup only for system objects; avoid storing user data here.</LI>
+								<LI>Use separate filegroups for:</LI>
+									<UL>
+										<LI>User tables</LI>
+										<LI>If your workload has high index usage, consider placing indexes on a separate filegroup from data tables.</LI>
+										<LI>Large objects (LOBs) like images, XML, and FILESTREAM data</LI>
+										<LI>Read-only or historical/archive data</LI>
+										<LI>Temporary or staging data</LI>
+									</UL>
+							</UL>
+						<LI>Distribute Filegroups Across Multiple Disks</LI>
+							<UL>
+								<LI>Place filegroups on separate physical disks (or storage tiers) to balance I/O load and improve performance.</LI>
+								<LI>Keep log files on a different disk than data filegroups.</LI>
+							</UL>
+						<LI>Implement a Filegroup Backup Strategy</LI>
+							<UL>
+								<LI>Use filegroup backups for VLDBs to reduce backup/restore times.</LI>
+								<LI>Schedule more frequent backups for frequently modified filegroups.</LI>
+							</UL>
+						<LI>Configure Autogrowth and Size Appropriately</LI>
+							<UL>
+								<LI>Avoid frequent small autogrowth events; set predefined growth sizes (e.g., MB/GB instead of percentage-based growth).</LI>
+								<LI>Balance file sizes within a filegroup to distribute data evenly.</LI>
+							</UL>
+						<LI>Use Partitioning for Large Tables</LI>
+							<UL>
+								<LI>Store partitions in separate filegroups to improve query performance and manageability.</LI>
+								<LI>Archive old data in separate filegroups to reduce maintenance overhead.</LI>
+							</UL>
+						<LI>Monitor and Optimize Regularly</LI>
+							<UL>
+								<LI>Use sys.dm_db_file_space_usage to monitor filegroup usage.</LI>
+								<LI>Defragment and rebuild indexes as needed.</LI>
+								<LI>Ensure sufficient free space in filegroups to prevent unexpected growth issues.</LI>
+							</UL>
+					</UL>
+				
+				<H3>Scenarios Where Restoring a Specific Filegroup Backup Makes Sense</H3>
 
-				<UL>
-					<LI>Move a Table to Another Filegroup</LI>
+					<OL>
+						<LI><B>Partial Restore for Large Databases</B> - In VLDBs, restoring only affected filegroups instead of the whole DB saves time (missing filegroups must be read-only). Especially useful for read-only or archived filegroups that rarely change.</LI>
+						<LI><B>Damaged Filegroup Recovery</B> - If a data file belonging to a specific filegroup is corrupted or lost (e.g., due to disk failure), you can restore just that filegroup without impacting the rest of the DB.</LI>
+						<LI><B>Online Piecemeal Restore</B> - SQL Server Enterprise Edition allows restoring filegroups one at a time, while bringing other parts of the DB online.</LI> You can bring up core tables quickly while deferring less critical filegroups.
+						<LI><B>Restore Archived Historical Data</B> - If old data is kept in a separate filegroup (e.g., ArchiveFG), it can be excluded from daily backups and only restored when needed.</LI>
+						<LI><B>Testing or Migration</B> - You may want to detach/attach or restore a specific filegroup in a staging environment for testing without dealing with the full DB.</LI>
+					</OL>
+
+					<P>Important Notes:</P>
+
 						<UL>
-							<LI>If the table has a clustered index, rebuild the clustered index on the target filegroup — this moves the table and all non-clustered indexes.</LI>
+							<LI>Primary filegroup must always be restored first.</LI>
+							<LI>Log backups are still needed to bring restored filegroups to a consistent point-in-time.</LI>
+							<LI>Backup must have been done at the filegroup level (ex: <CODE>BACKUP DATABASE ... FILEGROUP = 'ArchiveFG'</CODE>).</LI>
+						</UL>
+						
+				<H3>Moving data between Filegroups</H3>
+
+					<UL>
+						<LI>Move a Table to Another Filegroup</LI>
+							<UL>
+								<LI>If the table has a clustered index, rebuild the clustered index on the target filegroup — this moves the table and all non-clustered indexes.</LI>
 
 <PRE>
 ALTER TABLE dbo.MyTable
