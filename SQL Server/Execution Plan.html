@@ -24,6 +24,9 @@
 							<LI>If statistics are outdated, the estimated plan might predict fewer or more rows than the actual execution, leading to inefficient query execution.</LI>
 							<LI>Parameter sniffing can cause SQL Server to generate an inefficient execution plan based on initial inputs.</LI>
 							<LI>Runtime optimizations (e.g., parallelism, index usage) may cause deviations from the estimated plan.</LI>
+							<LI>SQL Server might reuse a cached plan even if it's not ideal for the current parameter values, causing the actual plan to differ in performance or behavior from what the estimate predicted.</LI>
+							<LI>Some decisions (like adaptive joins or memory grant feedback) are made during query execution, so the actual plan reflects what happened, not just what was expected.</LI>
+							<LI>Server load, available memory, parallelism settings, and locking can influence actual performance, which doesn't affect the estimated plan.</LI>
 						</UL>
 		
 				<H2>Physical vs Logical Reads</H2>

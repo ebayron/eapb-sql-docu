@@ -15,6 +15,7 @@
 					<LI>To speed up data retrieval.</LI>
 					<LI>Created on table and views.</LI>
 					<LI>If table has no index, then query engine checks every record from beginning to end (table scan).</LI>					
+					<LI>Creating a heap table, inserting billion rows, then creating a clustered index is faster than creating a clustered table then inserting billion rows.</LI>					
 				</UL>
 				
 			<H2>B Tree</H2>
@@ -46,49 +47,49 @@
 				
 			<H2>Clustered vs. Non Clustered</H2>
 			
-			<TABLE WIDTH=100%>
-			
-				<TR><TD WIDTH=100px CLASS="tabhead"></TD>
-					<TD CLASS="tabhead">Clustered</TD>
-					<TD CLASS="tabhead">Non Clustered</TD>
-				</TR>
+				<TABLE WIDTH=100%>
 				
-				<TR><TD CLASS="tabdata">Leaf Level</TD>
-					<TD CLASS="tabdata">Actual data pages of the table.</TD>
-					<TD CLASS="tabdata">Contains the key and include columns.</TD>
-				</TR>
+					<TR><TD WIDTH=100px CLASS="tabhead"></TD>
+						<TD CLASS="tabhead">Clustered</TD>
+						<TD CLASS="tabhead">Non Clustered</TD>
+					</TR>
+					
+					<TR><TD CLASS="tabdata">Leaf Level</TD>
+						<TD CLASS="tabdata">Actual data pages of the table.</TD>
+						<TD CLASS="tabdata">Contains the key and include columns.</TD>
+					</TR>
+					
+					<TR><TD CLASS="tabdata">Structure and Storage</TD>
+						<TD CLASS="tabdata">Sorts and stores the data rows of the table or view in order based on the clustered index key. There can be only one clustered index per table, because the data rows themselves can be stored in only one physical order.</TD>
+						<TD CLASS="tabdata">Creates a separate structure that references the data rows. The data is stored in one place, and the index is stored in another place. There can be multiple non-clustered indexes per table.</TD>
+					</TR>
+					
+					<TR><TD CLASS="tabdata">Data Access</TD>
+						<TD CLASS="tabdata">Accessing data through a clustered index is typically faster because the data is physically ordered on the disk to match the index. This is especially true for range queries.</TD>
+						<TD CLASS="tabdata">Can be slower for large result sets because they involve additional lookups to fetch the actual data from the table after finding the indexed entries.</TD>
+					</TR>
+					
+					<TR><TD CLASS="tabdata">Use Case</TD>
+						<TD CLASS="tabdata">Ideal for columns with a large number of distinct values that are often used in range queries or for sorting results, such as primary keys.</TD>
+						<TD CLASS="tabdata">Best for columns that are used frequently in search conditions but are not the primary means of sorting the data, such as foreign keys or columns used in frequent JOIN operations.</TD>
+					</TR>
+					
+					<TR><TD CLASS="tabdata">Index Size</TD>
+						<TD CLASS="tabdata">Essentially the size of the table itself since it rearranges the data rows.</TD>
+						<TD CLASS="tabdata">Usually smaller than the clustered index because they contain only the indexed columns and pointers to the data rows.</TD>
+					</TR>
+					
+					<TR><TD CLASS="tabdata">Performance Impact</TD>
+						<TD CLASS="tabdata">Can improve the performance of queries that retrieve large ranges of data but can slow down data modification operations (insert, update, delete) because the data must be kept in order.</TD>
+						<TD CLASS="tabdata">Can enhance the performance of read operations for the specific columns indexed but may add overhead to data modification operations due to the need to maintain the index.</TD>
+					</TR>
 				
-				<TR><TD CLASS="tabdata">Structure and Storage</TD>
-					<TD CLASS="tabdata">Sorts and stores the data rows of the table or view in order based on the clustered index key. There can be only one clustered index per table, because the data rows themselves can be stored in only one physical order.</TD>
-					<TD CLASS="tabdata">Creates a separate structure that references the data rows. The data is stored in one place, and the index is stored in another place. There can be multiple non-clustered indexes per table.</TD>
-				</TR>
+				</TABLE>
 				
-				<TR><TD CLASS="tabdata">Data Access</TD>
-					<TD CLASS="tabdata">Accessing data through a clustered index is typically faster because the data is physically ordered on the disk to match the index. This is especially true for range queries.</TD>
-					<TD CLASS="tabdata">Can be slower for large result sets because they involve additional lookups to fetch the actual data from the table after finding the indexed entries.</TD>
-				</TR>
-				
-				<TR><TD CLASS="tabdata">Use Case</TD>
-					<TD CLASS="tabdata">Ideal for columns with a large number of distinct values that are often used in range queries or for sorting results, such as primary keys.</TD>
-					<TD CLASS="tabdata">Best for columns that are used frequently in search conditions but are not the primary means of sorting the data, such as foreign keys or columns used in frequent JOIN operations.</TD>
-				</TR>
-				
-				<TR><TD CLASS="tabdata">Index Size</TD>
-					<TD CLASS="tabdata">Essentially the size of the table itself since it rearranges the data rows.</TD>
-					<TD CLASS="tabdata">Usually smaller than the clustered index because they contain only the indexed columns and pointers to the data rows.</TD>
-				</TR>
-				
-				<TR><TD CLASS="tabdata">Performance Impact</TD>
-					<TD CLASS="tabdata">Can improve the performance of queries that retrieve large ranges of data but can slow down data modification operations (insert, update, delete) because the data must be kept in order.</TD>
-					<TD CLASS="tabdata">Can enhance the performance of read operations for the specific columns indexed but may add overhead to data modification operations due to the need to maintain the index.</TD>
-				</TR>
-			
-			</TABLE>
-			
-			<UL>
-				<LI>Non Clustered Unique Index - Clustered Index Key is only at the leaf level.</LI>
-				<LI>Non Clustered Non Unique Index / Clustered Key is in INCLUDE column - Clustered Index Key is on the leaf level all the way up the root level.</LI>
-			</UL>
+				<UL>
+					<LI>Non Clustered Unique Index - Clustered Index Key is only at the leaf level.</LI>
+					<LI>Non Clustered Non Unique Index / Clustered Key is in INCLUDE column - Clustered Index Key is on the leaf level all the way up the root level.</LI>
+				</UL>
 			
 			<H2>Covering Index vs Included Columns Index</H2>
 			
@@ -145,6 +146,14 @@
 					<LI>Remove unused indexes first before duplicate indexes.</LI>
 					<LI>Duplicate indexes needs to be evaluated if really needed to be deleted.</LI>
 				</UL>
+				
+			<H2>Ways to increase Clustered Index creation</H2>
+			
+				<OL>
+					<LI>Use <CODE>SORT_IN_TEMPDB = ON</CODE> - By default, sorting happends in the user database, in the same filegroup as the target table/index. This can cause increased contention and I/O on your primary database files.</LI>
+					<LI>Set MAXDOP - SQL Server does try to choose an appropriate MAXDOP, but the automatic choice is conservative, especially under high server load or on busy systems, SQL Server may reduce parallelism to avoid resource contention.</LI>
+					<LI>Disable non clustered indexes - This avoids unnecessary work/maintenance/re-sort/re-point during insert/index build. Disabled indexes remain in metdata and can be rebuilt easily.</LI>
+				</OL>
 			
 			<H2>Dropping Indexes</H2>
 			
