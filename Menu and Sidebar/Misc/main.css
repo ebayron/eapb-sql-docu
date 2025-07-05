@@ -108,3 +108,8 @@ A.linklist:hover {font-weight : bold; color : #333333}
 .error em {
   color : red;
 }
+
+LI IMG {
+	display: inline;
+	margin: 0;
+}
